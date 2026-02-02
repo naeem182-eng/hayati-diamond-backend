@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Invoice extends Model
+{
+    protected $fillable = [
+        'customer_id',
+        'total_amount',
+        'payment_type',
+        'status',
+    ];
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function installmentPlan()
+    {
+        return $this->hasOne(InstallmentPlan::class);
+    }
+}
