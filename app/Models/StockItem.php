@@ -14,6 +14,7 @@ class StockItem extends Model
         'gold_price_at_make',
         'diamond_detail',
         'total_cost',
+        'price_sell',
         'status',
     ];
 
