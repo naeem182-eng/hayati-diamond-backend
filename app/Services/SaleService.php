@@ -52,10 +52,13 @@ class SaleService
              * 3. สร้าง Invoice Item
              * -------------------------- */
             InvoiceItem::create([
-                'invoice_id'    => $invoice->id,
-                'stock_item_id' => $stockItem->id,
-                'price'         => $stockItem->price_sell,
+                'invoice_id'     => $invoice->id,
+                'stock_item_id'  => $stockItem->id,
+                'product_id'     => $stockItem->product_id,
+                'price_at_sale'  => $stockItem->price_sell,
+                'quantity'       => 1,
             ]);
+
 
             /** -------------------------
              * 4. อัปเดตสถานะสินค้า
