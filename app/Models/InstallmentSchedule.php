@@ -8,6 +8,7 @@ class InstallmentSchedule extends Model
 {
     protected $fillable = [
         'installment_plan_id',
+        'month_no',
         'due_date',
         'amount',
         'paid_at',

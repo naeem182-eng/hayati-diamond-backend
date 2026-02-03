@@ -7,12 +7,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Product;
 use App\Models\StockItem;
 use App\Services\SaleService;
+use PHPUnit\Framework\Attributes\Test;
 
 class SaleServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_can_sell_a_stock_item_successfully()
     {
         // Arrange
