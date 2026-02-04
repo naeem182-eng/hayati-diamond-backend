@@ -13,15 +13,19 @@ class StockItemFactory extends Factory
     {
     return [
         'serial_no' => fake()->uuid(),
-        'status' => 'IN_STOCK',
-
-        // REQUIRED by schema
-        'gold_weight_actual' => 1.50,      // กรัม
-        'gold_price_at_make' => 30000,     // ราคาตอนทำ
+        'status' => 'RESERVED', // default กลาง ๆ
+        'gold_weight_actual' => 1.50,
+        'gold_price_at_make' => 30000,
         'total_cost' => 30000,
-
-        // Phase 1 sell price
         'price_sell' => 50000,
-            ];
+    ];
     }
+
+    public function inStock(): static
+    {
+    return $this->state(fn () => [
+        'status' => 'IN_STOCK',
+    ]);
+    }
+
 }

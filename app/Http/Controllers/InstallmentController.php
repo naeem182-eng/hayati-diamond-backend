@@ -6,6 +6,7 @@ use App\Models\Invoice;
 use App\Models\InstallmentSchedule;
 use App\Services\InstallmentService;
 use Illuminate\Http\Request;
+use App\Exceptions\InstallmentAlreadyExistsException;
 
 class InstallmentController extends Controller
 {
@@ -16,6 +17,7 @@ class InstallmentController extends Controller
         $this->installmentService = $installmentService;
     }
 
+
     /**
      * สร้างแผนผ่อนจาก Invoice
      *
@@ -23,13 +25,14 @@ class InstallmentController extends Controller
      */
     public function createPlan(Request $request)
     {
-        $validated = $request->validate([
-            'invoice_id' => ['required', 'exists:invoices,id'],
-            'months'     => ['required', 'integer', 'min:1'],
-        ]);
+    $validated = $request->validate([
+        'invoice_id' => ['required', 'exists:invoices,id'],
+        'months'     => ['required', 'integer', 'min:1'],
+    ]);
 
-        $invoice = Invoice::findOrFail($validated['invoice_id']);
+    $invoice = Invoice::findOrFail($validated['invoice_id']);
 
+    try {
         $plan = $this->installmentService
             ->createPlanFromInvoice($invoice, $validated['months']);
 
@@ -37,6 +40,12 @@ class InstallmentController extends Controller
             'message' => 'สร้างแผนผ่อนเรียบร้อย',
             'data'    => $plan->load('schedules'),
         ], 201);
+
+    } catch (InstallmentAlreadyExistsException $e) {
+        return response()->json([
+            'message' => $e->getMessage(),
+        ], 422);
+    }
     }
 
     /**

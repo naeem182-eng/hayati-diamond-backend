@@ -105,18 +105,16 @@ class InstallmentTest extends TestCase
     #[Test]
     public function it_cannot_create_duplicate_installment_plan_for_same_invoice()
     {
-    $invoice = Invoice::factory()->create([
-        'payment_type' => 'INSTALLMENT',
-        'total_amount' => 50000,
-        'status'       => 'ACTIVE',
+    $invoice = Invoice::factory()
+        ->installment()
+        ->create(['total_amount' => 50000]);
+
+    // สร้างแผนผ่อนครั้งแรก
+    InstallmentPlan::factory()->create([
+        'invoice_id' => $invoice->id,
     ]);
 
-    InstallmentPlan::create([
-        'invoice_id'   => $invoice->id,
-        'total_amount' => 50000,
-        'months'       => 5,
-    ]);
-
+    // ยิง API สร้างซ้ำ
     $response = $this->postJson('/api/installments', [
         'invoice_id' => $invoice->id,
         'months'     => 5,
@@ -124,4 +122,5 @@ class InstallmentTest extends TestCase
 
     $response->assertStatus(422);
     }
+
 }
