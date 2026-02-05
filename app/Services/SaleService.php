@@ -13,18 +13,12 @@ class SaleService
     /**
      * ขายสินค้า 1 ชิ้น
      *
-     * Use Case:
-     * - สินค้าต้องยังไม่ถูกขาย
-     * - ต้องมีราคาขาย
-     * - รองรับส่วนลด / โปรโมชัน
-     * - 1 Invoice ต่อ 1 StockItem
-     *
      * @param array{
      *   stock_item_id: int,
      *   customer_id?: int|null,
      *   customer_name?: string|null,
-     *   payment_type?: 'CASH'|'INSTALLMENT',
-     *   discount_type?: 'FIXED'|'PERCENT',
+     *   payment_type?: string,
+     *   discount_type?: string,
      *   discount_value?: float,
      *   promotion_code?: string|null
      * }
@@ -39,7 +33,7 @@ class SaleService
             // Step 2: Business Validation
             $this->assertStockItemCanBeSold($stockItem);
 
-            // Step 3: Calculate Price (รวม Discount)
+            // Step 3: Calculate Final Price
             [$finalPrice, $discountAmount] = $this->calculateFinalPrice(
                 $stockItem->price_sell,
                 $data
@@ -53,95 +47,94 @@ class SaleService
                 $discountAmount
             );
 
-            // Step 5: Create Invoice Item
+            // Step 5: Create Invoice Item (snapshot)
             $this->createInvoiceItem($invoice, $stockItem, $finalPrice);
 
-            // Step 6: Update Stock Status
+            // Step 6: Mark Stock SOLD
             $this->markStockItemAsSold($stockItem);
 
             return $invoice;
         });
     }
 
-    /** -------------------------
+    /* ==============================
      * Step 1: Load + Lock
-     * -------------------------- */
+     * ============================== */
     protected function loadStockItemForSale(int $stockItemId): StockItem
     {
         return StockItem::lockForUpdate()->findOrFail($stockItemId);
     }
 
-    /** -------------------------
-     * Step 2: Business Validation
-     * -------------------------- */
+    /* ==============================
+     * Step 2: Validation
+     * ============================== */
     protected function assertStockItemCanBeSold(StockItem $stockItem): void
     {
-        if ($stockItem->status !== 'IN_STOCK') {
+        if ($stockItem->status !== StockItem::STATUS_IN_STOCK) {
             throw new Exception('สินค้านี้ถูกขายไปแล้ว');
         }
 
-        if (empty($stockItem->price_sell)) {
+        if ($stockItem->price_sell === null) {
             throw new Exception('สินค้านี้ยังไม่ได้ตั้งราคาขาย');
         }
     }
 
-    /** -------------------------
-     * Step 3: Calculate Final Price
-     * -------------------------- */
+    /* ==============================
+     * Step 3: Price Calculation
+     * ============================== */
     protected function calculateFinalPrice(float $basePrice, array $data): array
     {
         $discountAmount = 0;
 
-        if (!empty($data['discount_type']) && !empty($data['discount_value'])) {
-
-            if ($data['discount_type'] === 'FIXED') {
+        if (
+            !empty($data['discount_type']) &&
+            !empty($data['discount_value'])
+        ) {
+            if ($data['discount_type'] === Invoice::DISCOUNT_FIXED) {
                 $discountAmount = $data['discount_value'];
             }
 
-            if ($data['discount_type'] === 'PERCENT') {
+            if ($data['discount_type'] === Invoice::DISCOUNT_PERCENT) {
                 $discountAmount = ($basePrice * $data['discount_value']) / 100;
             }
         }
 
-        // ป้องกันราคาติดลบ
         $finalPrice = max($basePrice - $discountAmount, 0);
 
         return [$finalPrice, $discountAmount];
     }
 
-    /** -------------------------
+    /* ==============================
      * Step 4: Create Invoice
-     * -------------------------- */
+     * ============================== */
     protected function createInvoice(
         StockItem $stockItem,
         array $data,
         float $finalPrice,
         float $discountAmount
     ): Invoice {
+        $paymentType = $data['payment_type'] ?? Invoice::PAYMENT_CASH;
+
         return Invoice::create([
-            'customer_id'      => $data['customer_id']   ?? null,
-            'customer_name'    => $data['customer_name'] ?? null,
+            'customer_id'     => $data['customer_id']   ?? null,
+            'customer_name'   => $data['customer_name'] ?? null,
 
-            // ราคาหลังหักส่วนลดแล้ว
-            'total_amount'     => $finalPrice,
+            'total_amount'    => $finalPrice,
 
-            // ข้อมูลส่วนลด
-            'discount_amount'  => $discountAmount,
-            'discount_type'    => $data['discount_type'] ?? null,
-            'promotion_code'   => $data['promotion_code'] ?? null,
+            'discount_amount' => $discountAmount,
+            'discount_type'   => $data['discount_type'] ?? null,
+            'promotion_code'  => $data['promotion_code'] ?? null,
 
-            'payment_type'     => $data['payment_type'] ?? 'CASH',
-
-            // ถ้าเป็นผ่อน → ACTIVE (รอ InstallmentService)
-            'status'           => ($data['payment_type'] ?? 'CASH') === 'INSTALLMENT'
-                                    ? 'ACTIVE'
-                                    : 'PAID',
+            'payment_type'    => $paymentType,
+            'status'          => $paymentType === Invoice::PAYMENT_INSTALLMENT
+                                    ? Invoice::STATUS_ACTIVE
+                                    : Invoice::STATUS_PAID,
         ]);
     }
 
-    /** -------------------------
-     * Step 5: Create Invoice Item
-     * -------------------------- */
+    /* ==============================
+     * Step 5: Invoice Item Snapshot
+     * ============================== */
     protected function createInvoiceItem(
         Invoice $invoice,
         StockItem $stockItem,
@@ -156,13 +149,13 @@ class SaleService
         ]);
     }
 
-    /** -------------------------
+    /* ==============================
      * Step 6: Update Stock Status
-     * -------------------------- */
+     * ============================== */
     protected function markStockItemAsSold(StockItem $stockItem): void
     {
         $stockItem->update([
-            'status' => 'SOLD',
+            'status' => StockItem::STATUS_SOLD,
         ]);
     }
 }

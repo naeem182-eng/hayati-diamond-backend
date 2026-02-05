@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class InstallmentPlan extends Model
 {
-    use HasFactory;
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_COMPLETED = 'COMPLETED';
+
     protected $fillable = [
         'invoice_id',
         'total_amount',
-        'down_payment',
         'months',
-        'interest_rate',
         'status',
     ];
 

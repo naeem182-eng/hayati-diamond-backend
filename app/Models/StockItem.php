@@ -9,6 +9,9 @@ class StockItem extends Model
 {
     use HasFactory;
 
+    public const STATUS_IN_STOCK = 'IN_STOCK';
+    public const STATUS_SOLD = 'SOLD';
+
     protected $fillable = [
         'product_id',
         'serial_no',

@@ -9,6 +9,15 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    public const PAYMENT_CASH = 'CASH';
+    public const PAYMENT_INSTALLMENT = 'INSTALLMENT';
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_PAID = 'PAID';
+
+    public const DISCOUNT_FIXED = 'FIXED';
+    public const DISCOUNT_PERCENT = 'PERCENT';
+
     protected $fillable = [
         'customer_id',
         'customer_name',

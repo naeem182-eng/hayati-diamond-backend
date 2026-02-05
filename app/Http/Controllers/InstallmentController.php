@@ -7,6 +7,7 @@ use App\Models\InstallmentSchedule;
 use App\Services\InstallmentService;
 use Illuminate\Http\Request;
 use App\Exceptions\InstallmentAlreadyExistsException;
+use Illuminate\Http\RedirectResponse;
 
 class InstallmentController extends Controller
 {
@@ -67,5 +68,13 @@ class InstallmentController extends Controller
         return response()->json([
             'message' => 'ชำระเงินงวดเรียบร้อย',
         ]);
+    }
+
+    public function payFromAdmin(
+    InstallmentSchedule $schedule
+    ): RedirectResponse {
+    $this->installmentService->markScheduleAsPaid($schedule);
+
+    return back()->with('success', 'ชำระงวดเรียบร้อยแล้ว');
     }
 }
