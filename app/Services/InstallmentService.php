@@ -7,7 +7,7 @@ use App\Models\InstallmentPlan;
 use App\Models\InstallmentSchedule;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Exceptions\{
+use App\Exceptions\Installment\{
     InvoiceNotInstallmentException,
     InstallmentAlreadyExistsException,
     InvalidInstallmentMonthsException,

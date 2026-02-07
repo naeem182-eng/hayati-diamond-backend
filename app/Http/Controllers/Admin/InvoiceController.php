@@ -10,7 +10,7 @@ class InvoiceController extends Controller
 {
     public function show(Invoice $invoice)
     {
-        $invoice->load('items.stockItem.product');
+        $invoice->load(['items.stockItem.product','installmentPlan.schedules']);
 
         return view('admin.invoices.show', compact('invoice'));
     }

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Invoice;
+use Illuminate\Validation\Rule;
 
 class SaleRequest extends FormRequest
 {
@@ -22,16 +23,32 @@ class SaleRequest extends FormRequest
 
             'payment_type'  => [
                 'required',
-                'in:' . Invoice::PAYMENT_CASH . ',' . Invoice::PAYMENT_INSTALLMENT
+                Rule::in([
+                    Invoice::PAYMENT_CASH,
+                    Invoice::PAYMENT_INSTALLMENT
+                ]),
+            ],
+
+            // ⭐⭐⭐ ตัวที่หายไป และเป็นต้นเหตุทั้งหมด ⭐⭐⭐
+            'installment_months' => [
+                Rule::requiredIf(
+                    $this->input('payment_type') === Invoice::PAYMENT_INSTALLMENT
+                ),
+                'integer',
+                'min:1',
             ],
 
             'discount_type' => [
                 'nullable',
-                'in:' . Invoice::DISCOUNT_FIXED . ',' . Invoice::DISCOUNT_PERCENT
+                Rule::in([
+                    Invoice::DISCOUNT_FIXED,
+                    Invoice::DISCOUNT_PERCENT
+                ]),
             ],
-            'discount_value'=> ['nullable', 'numeric', 'min:0'],
 
-            'promotion_code'=> ['nullable', 'string', 'max:100'],
+            'discount_value' => ['nullable', 'numeric', 'min:0'],
+
+            'promotion_code' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

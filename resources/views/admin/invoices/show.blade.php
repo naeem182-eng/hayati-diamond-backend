@@ -1,54 +1,32 @@
+@extends('admin.layout')
+
+@section('content')
+
+<h1>Invoice #{{ $invoice->id }}</h1>
+<a
+    href="{{ route('admin.invoices.print', $invoice) }}"
+    target="_blank"
+    style="
+        display:inline-block;
+        margin-bottom:15px;
+        padding:6px 12px;
+        background:#000;
+        color:#fff;
+        text-decoration:none;
+    "
+>
+    🖨️ Print PDF
+</a>
+
+<p>
+    Customer: {{ $invoice->customer_name }} <br>
+    Total: {{ number_format($invoice->total_amount, 2) }} <br>
+    Payment Type: {{ $invoice->payment_type }}
+</p>
+
 @if($invoice->payment_type === 'INSTALLMENT' && $invoice->installmentPlan)
 
-<h3>Installment Schedule</h3>
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Due Date</th>
-            <th class="text-end">Amount</th>
-            <th>Status</th>
-            <th width="180">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach($invoice->installmentPlan->schedules as $schedule)
-        <tr>
-            <td>{{ $schedule->month_no }}</td>
-            <td>{{ $schedule->due_date }}</td>
-            <td class="text-end">
-                {{ number_format($schedule->amount, 2) }}
-            </td>
-            <td>
-                @if($schedule->status === 'PAID')
-                    <span class="badge bg-success">PAID</span>
-                @else
-                    <span class="badge bg-warning">UNPAID</span>
-                @endif
-            </td>
-            <td>
-                @if($schedule->status === 'UNPAID')
-                    <form method="POST"
-                          action="{{ route('admin.installments.pay', $schedule) }}"
-                          onsubmit="return confirm('ยืนยันรับชำระงวดนี้?')">
-                        @csrf
-                        <button class="btn btn-sm btn-primary">
-                            รับชำระงวดนี้
-                        </button>
-                    </form>
-                @else
-                    <small>
-                        Paid at {{ $schedule->paid_at?->format('Y-m-d') }}
-                    </small>
-                @endif
-            </td>
-        </tr>
-    @endforeach
-    @if($invoice->payment_type === 'INSTALLMENT' && $invoice->installmentPlan)
-
-<hr>
-<h3>Installment Schedule</h3>
+    <h3>Installment Schedule</h3>
 
 <table>
     <thead>
@@ -67,27 +45,34 @@
             <td>{{ $schedule->due_date }}</td>
             <td>{{ number_format($schedule->amount, 2) }}</td>
             <td>{{ $schedule->status }}</td>
-            <td>
-                @if($schedule->status === 'UNPAID')
-                    <form method="POST"
-                          action="{{ route('admin.installments.pay', $schedule) }}">
-                        @csrf
-                        <button type="submit">
-                            Pay
-                        </button>
-                    </form>
-                @else
-                    ✔ Paid
-                @endif
+           <td>
+            @if($schedule->status === 'UNPAID')
+                <form
+                action="{{ route('admin.installments.pay', $schedule) }}"
+                method="POST"
+                style="display:inline"
+                >
+            @csrf
+                <button
+                type="submit"
+                class="btn btn-sm btn-primary"
+                onclick="return confirm('ยืนยันรับชำระงวดนี้?')"
+                >
+                รับเงินงวด
+                </button>
+                </form>
+            @else
+            <span class="text-success">ชำระแล้ว</span>
+            @endif
             </td>
+
         </tr>
     @endforeach
     </tbody>
 </table>
 
+@else
+    <p>No installment plan.</p>
 @endif
 
-    </tbody>
-</table>
-
-@endif
+@endsection

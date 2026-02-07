@@ -1,58 +1,106 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\StockItemController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\InvoiceController;
-use App\Http\Controllers\Admin\InstallmentController;
+use App\Http\Controllers\Admin\AdminInstallmentController;
 
+use App\Http\Controllers\InstallmentController;
+use App\Http\Controllers\InstallmentPaymentController;
+
+use App\Models\Invoice;
+
+/*
+|--------------------------------------------------------------------------
+| Root
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return redirect()->route('admin.dashboard');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+*/
 Route::prefix('admin')->name('admin.')->group(function () {
+
+    // Dashboard
     Route::get('/dashboard', function () {
-        return view('admin.dashboard');
+        $latestInvoices = Invoice::latest()
+        ->take(10)
+        ->get();
+
+        return view('admin.dashboard', compact('latestInvoices'));
     })->name('dashboard');
-});
 
-
-Route::prefix('admin')->name('admin.')->group(function () {
+    // Products
     Route::resource('products', ProductController::class);
-});
 
-Route::prefix('admin')->name('admin.')->group(function () {
+    // Stock Items
     Route::resource('stock-items', StockItemController::class)
         ->only(['index', 'create', 'store']);
-});
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('sales/create', [SaleController::class, 'create'])->name('sales.create');
-    Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
-});
+    // Sales
+    Route::get('sales/create', [SaleController::class, 'create'])
+        ->name('sales.create');
+    Route::post('sales', [SaleController::class, 'store'])
+        ->name('sales.store');
 
-Route::prefix('admin')->name('admin.')->group(function () {
+    // Invoices
     Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])
         ->name('invoices.show');
 
     Route::get('invoices/{invoice}/print', [InvoiceController::class, 'printPdf'])
         ->name('invoices.print');
+
+    // ===============================
+    // Installments (ADMIN)
+    // ===============================
+
+    // ✅ บิลผ่อนค้าง (LIST)
+    Route::get(
+        'installments',
+        [AdminInstallmentController::class, 'index']
+    )->name('installments.index');
+
+    // ✅ รับเงินงวด
+    Route::post(
+        'installments/{schedule}/pay',
+        [AdminInstallmentController::class, 'pay']
+    )->name('installments.pay');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Installment API / Public (ถ้ามีใช้)
+|--------------------------------------------------------------------------
+*/
 Route::post(
-    'admin/invoices/{invoice}/installments',
-    [InstallmentController::class, 'store']
-)->name('admin.installments.store');
+    '/installments',
+    [InstallmentController::class, 'createPlan']
+);
 
 Route::post(
-    '/admin/installments/{schedule}/pay',
-    [\App\Http\Controllers\Admin\AdminInstallmentController::class, 'pay']
-)->name('admin.installments.pay');
+    '/installments/pay',
+    [InstallmentController::class, 'paySchedule']
+);
+
+/*
+|--------------------------------------------------------------------------
+| Installment Receive Page (Form แยก)
+|--------------------------------------------------------------------------
+*/
+Route::get(
+    '/installments/{schedule}/receive',
+    [InstallmentPaymentController::class, 'create']
+)->name('installments.receive');
 
 Route::post(
-    'admin/installment-schedules/{schedule}/pay',
-    [InstallmentController::class, 'payFromAdmin']
-)->name('admin.installments.pay');
-
-
+    '/installments/{schedule}/receive',
+    [InstallmentPaymentController::class, 'store']
+)->name('installments.receive.store');

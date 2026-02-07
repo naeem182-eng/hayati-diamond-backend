@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Invoice;
 use App\Models\InstallmentPlan;
 use App\Services\InstallmentService;
-use App\Exceptions\InstallmentAlreadyExistsException;
+use App\Exceptions\Installment\InstallmentAlreadyExistsException;
 use PHPUnit\Framework\Attributes\Test;
 
 class InstallmentServiceTest extends TestCase

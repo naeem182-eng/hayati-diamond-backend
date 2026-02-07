@@ -6,7 +6,7 @@ use App\Models\Invoice;
 use App\Models\InstallmentSchedule;
 use App\Services\InstallmentService;
 use Illuminate\Http\Request;
-use App\Exceptions\InstallmentAlreadyExistsException;
+use App\Exceptions\Installment\InstallmentAlreadyExistsException;
 use Illuminate\Http\RedirectResponse;
 
 class InstallmentController extends Controller

@@ -21,6 +21,7 @@
             <li><a href="{{ route('admin.products.index') }}">Products</a></li>
             <li><a href="{{ route('admin.stock-items.index') }}">Stock</a></li>
             <li><a href="{{ route('admin.sales.create') }}">Sale</a></li>
+            <li><a href="{{ route('admin.installments.index') }}">🧾 บิลผ่อนค้าง</a></li>
         </ul>
     </aside>
 

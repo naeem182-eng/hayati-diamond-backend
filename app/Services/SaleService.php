@@ -10,18 +10,15 @@ use Exception;
 
 class SaleService
 {
+    protected InstallmentService $installmentService;
+
+    public function __construct(InstallmentService $installmentService)
+    {
+        $this->installmentService = $installmentService;
+    }
+
     /**
      * ขายสินค้า 1 ชิ้น
-     *
-     * @param array{
-     *   stock_item_id: int,
-     *   customer_id?: int|null,
-     *   customer_name?: string|null,
-     *   payment_type?: string,
-     *   discount_type?: string,
-     *   discount_value?: float,
-     *   promotion_code?: string|null
-     * }
      */
     public function sellSingleItem(array $data): Invoice
     {
@@ -30,27 +27,39 @@ class SaleService
             // Step 1: Load + Lock Stock
             $stockItem = $this->loadStockItemForSale($data['stock_item_id']);
 
-            // Step 2: Business Validation
+            // Step 2: Validation
             $this->assertStockItemCanBeSold($stockItem);
 
-            // Step 3: Calculate Final Price
+            // Step 3: Price Calculation
             [$finalPrice, $discountAmount] = $this->calculateFinalPrice(
                 $stockItem->price_sell,
                 $data
             );
 
-            // Step 4: Create Invoice
+            // Step 4: Create Invoice (ต้องมาก่อน)
             $invoice = $this->createInvoice(
-                $stockItem,
                 $data,
                 $finalPrice,
                 $discountAmount
             );
 
-            // Step 5: Create Invoice Item (snapshot)
+            // Step 5: Create Installment Plan (ถ้าเป็นผ่อน)
+            if ($invoice->payment_type === Invoice::PAYMENT_INSTALLMENT) {
+
+                $months = (int) ($data['installment_months'] ?? 0);
+
+                if ($months <= 0) {
+                    throw new Exception('ต้องระบุจำนวนเดือนผ่อน');
+                }
+
+                $this->installmentService
+                    ->createPlanFromInvoice($invoice, $months);
+            }
+
+            // Step 6: Create Invoice Item (snapshot)
             $this->createInvoiceItem($invoice, $stockItem, $finalPrice);
 
-            // Step 6: Mark Stock SOLD
+            // Step 7: Mark Stock SOLD
             $this->markStockItemAsSold($stockItem);
 
             return $invoice;
@@ -58,16 +67,14 @@ class SaleService
     }
 
     /* ==============================
-     * Step 1: Load + Lock
+     * Helpers
      * ============================== */
-    protected function loadStockItemForSale(int $stockItemId): StockItem
+
+    protected function loadStockItemForSale(int $id): StockItem
     {
-        return StockItem::lockForUpdate()->findOrFail($stockItemId);
+        return StockItem::lockForUpdate()->findOrFail($id);
     }
 
-    /* ==============================
-     * Step 2: Validation
-     * ============================== */
     protected function assertStockItemCanBeSold(StockItem $stockItem): void
     {
         if ($stockItem->status !== StockItem::STATUS_IN_STOCK) {
@@ -79,17 +86,11 @@ class SaleService
         }
     }
 
-    /* ==============================
-     * Step 3: Price Calculation
-     * ============================== */
     protected function calculateFinalPrice(float $basePrice, array $data): array
     {
         $discountAmount = 0;
 
-        if (
-            !empty($data['discount_type']) &&
-            !empty($data['discount_value'])
-        ) {
+        if (!empty($data['discount_type']) && !empty($data['discount_value'])) {
             if ($data['discount_type'] === Invoice::DISCOUNT_FIXED) {
                 $discountAmount = $data['discount_value'];
             }
@@ -99,16 +100,10 @@ class SaleService
             }
         }
 
-        $finalPrice = max($basePrice - $discountAmount, 0);
-
-        return [$finalPrice, $discountAmount];
+        return [max($basePrice - $discountAmount, 0), $discountAmount];
     }
 
-    /* ==============================
-     * Step 4: Create Invoice
-     * ============================== */
     protected function createInvoice(
-        StockItem $stockItem,
         array $data,
         float $finalPrice,
         float $discountAmount
@@ -118,40 +113,31 @@ class SaleService
         return Invoice::create([
             'customer_id'     => $data['customer_id']   ?? null,
             'customer_name'   => $data['customer_name'] ?? null,
-
             'total_amount'    => $finalPrice,
-
             'discount_amount' => $discountAmount,
             'discount_type'   => $data['discount_type'] ?? null,
             'promotion_code'  => $data['promotion_code'] ?? null,
-
             'payment_type'    => $paymentType,
             'status'          => $paymentType === Invoice::PAYMENT_INSTALLMENT
-                                    ? Invoice::STATUS_ACTIVE
-                                    : Invoice::STATUS_PAID,
+                ? Invoice::STATUS_ACTIVE
+                : Invoice::STATUS_PAID,
         ]);
     }
 
-    /* ==============================
-     * Step 5: Invoice Item Snapshot
-     * ============================== */
     protected function createInvoiceItem(
         Invoice $invoice,
         StockItem $stockItem,
-        float $finalPrice
+        float $price
     ): void {
         InvoiceItem::create([
             'invoice_id'    => $invoice->id,
             'stock_item_id' => $stockItem->id,
             'product_id'    => $stockItem->product_id,
-            'price_at_sale' => $finalPrice,
+            'price_at_sale' => $price,
             'quantity'      => 1,
         ]);
     }
 
-    /* ==============================
-     * Step 6: Update Stock Status
-     * ============================== */
     protected function markStockItemAsSold(StockItem $stockItem): void
     {
         $stockItem->update([
@@ -159,3 +145,4 @@ class SaleService
         ]);
     }
 }
+

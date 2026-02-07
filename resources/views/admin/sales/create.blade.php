@@ -41,6 +41,10 @@
     </select>
     <br><br>
 
+    <label>Installment Months</label><br>
+    <input type="number" name="installment_months" min="1">
+    <br><br>
+
     {{-- Discount --}}
     <fieldset>
         <legend>Discount (optional)</legend>

@@ -21,14 +21,15 @@ class SaleController extends Controller
     public function sellSingleItem(Request $request)
     {
         $validated = $request->validate([
-            'stock_item_id' => ['required', 'exists:stock_items,id'],
-            'customer_id'   => ['nullable', 'exists:customers,id'],
-            'customer_name' => ['nullable', 'string'],
-            'payment_type'  => ['nullable', 'in:CASH,INSTALLMENT'],
-            'discount_type' => ['nullable', 'in:FIXED,PERCENT'],
-            'discount_value'=> ['nullable', 'numeric', 'min:0'],
-            'promotion_code'=> ['nullable', 'string'],
-        ]);
+    'stock_item_id'      => ['required', 'exists:stock_items,id'],
+    'customer_id'        => ['nullable', 'exists:customers,id'],
+    'customer_name'      => ['nullable', 'string'],
+    'payment_type'       => ['nullable', 'in:CASH,INSTALLMENT'],
+    'installment_months' => ['nullable', 'integer', 'min:1'],
+    'discount_type'      => ['nullable', 'in:FIXED,PERCENT'],
+    'discount_value'     => ['nullable', 'numeric', 'min:0'],
+    'promotion_code'     => ['nullable', 'string'],
+    ]);
 
         $invoice = $this->saleService->sellSingleItem($validated);
 
