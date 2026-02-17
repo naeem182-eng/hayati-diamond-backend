@@ -13,7 +13,7 @@
 <table border="1" cellpadding="8" cellspacing="0">
     <tr>
         <th>งวดที่</th>
-        <td>{{ $schedule->installment_no }}</td>
+        <td>{{ $schedule->month_no }}</td>
     </tr>
     <tr>
         <th>วันครบกำหนด</th>
@@ -30,20 +30,19 @@
 </table>
 
 <hr>
-
-<form method="POST" action="{{ route('installments.receive.store', $schedule) }}">
+    <form method="POST" action="{{ route('admin.installments.receive.store', $schedule) }}">
     @csrf
 
     <div>
         <label>จำนวนเงินที่รับ *</label><br>
         <input
             type="number"
-            name="paid_amount"
+            name="amount"
             step="0.01"
-            value="{{ old('paid_amount', $schedule->amount) }}"
+            value="{{ old('amount', $schedule->amount) }}"
             required
         >
-        @error('paid_amount')
+        @error('amount')
             <div style="color:red">{{ $message }}</div>
         @enderror
     </div>

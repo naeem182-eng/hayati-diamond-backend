@@ -73,6 +73,23 @@ Route::prefix('admin')->name('admin.')->group(function () {
         'installments/{schedule}/pay',
         [AdminInstallmentController::class, 'pay']
     )->name('installments.pay');
+
+    /*
+|--------------------------------------------------------------------------
+| Installment Receive Page (Form แยก)
+|--------------------------------------------------------------------------
+*/
+
+    Route::get(
+    'installments/{schedule}/receive',
+    [AdminInstallmentController::class, 'receive']
+    )->name('installments.receive');
+
+    Route::post(
+    'installments/{schedule}/receive',
+    [AdminInstallmentController::class, 'storeReceive']
+    )->name('installments.receive.store');
+
 });
 
 /*
@@ -90,17 +107,5 @@ Route::post(
     [InstallmentController::class, 'paySchedule']
 );
 
-/*
-|--------------------------------------------------------------------------
-| Installment Receive Page (Form แยก)
-|--------------------------------------------------------------------------
-*/
-Route::get(
-    '/installments/{schedule}/receive',
-    [InstallmentPaymentController::class, 'create']
-)->name('installments.receive');
 
-Route::post(
-    '/installments/{schedule}/receive',
-    [InstallmentPaymentController::class, 'store']
-)->name('installments.receive.store');
+

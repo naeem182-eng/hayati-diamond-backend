@@ -26,7 +26,17 @@ class Invoice extends Model
         'status',
         'discount_type',
         'discount_amount',
+        'promotion_code',
     ];
+
+    protected $appends = [
+        'paid_total',
+        'outstanding_balance',
+    ];
+
+    /* ===============================
+     * Relations
+     * =============================== */
 
     public function customer()
     {
@@ -41,5 +51,40 @@ class Invoice extends Model
     public function installmentPlan()
     {
         return $this->hasOne(InstallmentPlan::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /* ===============================
+     * Accessors
+     * =============================== */
+
+    public function getPaidTotalAttribute(): float
+    {
+        return (float) $this->payments()->sum('amount');
+    }
+
+    public function getOutstandingBalanceAttribute(): float
+    {
+        return max(
+            (float) $this->total_amount - $this->paid_total,
+            0
+        );
+    }
+
+    /* ===============================
+     * Business Logic
+     * =============================== */
+
+    public function refreshPaymentStatus(): void
+    {
+        if ($this->outstanding_balance <= 0) {
+            $this->update([
+                'status' => self::STATUS_PAID,
+            ]);
+        }
     }
 }

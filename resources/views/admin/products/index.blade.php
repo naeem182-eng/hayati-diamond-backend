@@ -25,7 +25,7 @@
             <td>{{ $product->is_active ? 'Yes' : 'No' }}</td>
             <td>
                 @if($product->image_url)
-                    <img src="{{ $product->image_url }}" width="60">
+                <img src="{{ asset('images/products/' . $product->image_url) }}" width="60">
                 @endif
             </td>
             <td>

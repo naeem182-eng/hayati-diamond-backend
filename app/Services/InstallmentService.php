@@ -24,9 +24,7 @@ class InstallmentService
         int $months
     ): InstallmentPlan {
 
-        // -------- Business Rules --------
-
-        if ($invoice->payment_type !== 'INSTALLMENT') {
+        if ($invoice->payment_type !== Invoice::PAYMENT_INSTALLMENT) {
             throw new InvoiceNotInstallmentException(
                 'Invoice นี้ไม่ได้เลือกการชำระแบบผ่อน'
             );
@@ -44,15 +42,13 @@ class InstallmentService
             );
         }
 
-        // -------- Transaction --------
-
         return DB::transaction(function () use ($invoice, $months) {
 
             $plan = InstallmentPlan::create([
                 'invoice_id'   => $invoice->id,
                 'total_amount' => $invoice->total_amount,
                 'months'       => $months,
-                'status'       => 'ACTIVE',
+                'status'       => InstallmentPlan::STATUS_ACTIVE,
             ]);
 
             $monthlyAmount = round(
@@ -61,6 +57,7 @@ class InstallmentService
             );
 
             for ($month = 1; $month <= $months; $month++) {
+
                 InstallmentSchedule::create([
                     'installment_plan_id' => $plan->id,
                     'month_no'            => $month,
@@ -75,7 +72,8 @@ class InstallmentService
     }
 
     /**
-     * ชำระเงินงวดหนึ่ง
+     * เปลี่ยนสถานะงวดเป็น PAID
+     * (ไม่ยุ่งกับ Invoice อีกต่อไป)
      */
     public function markScheduleAsPaid(
         InstallmentSchedule $schedule
@@ -102,11 +100,7 @@ class InstallmentService
 
             if (! $hasUnpaid) {
                 $plan->update([
-                    'status' => 'COMPLETED',
-                ]);
-
-                $plan->invoice->update([
-                    'status' => 'PAID',
+                    'status' => InstallmentPlan::STATUS_COMPLETED,
                 ]);
             }
         });

@@ -54,27 +54,27 @@ class InstallmentController extends Controller
      *
      * POST /api/installments/pay
      */
-    public function paySchedule(Request $request)
-    {
-        $validated = $request->validate([
-            'schedule_id' => ['required', 'exists:installment_schedules,id'],
-        ]);
+    // public function paySchedule(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'schedule_id' => ['required', 'exists:installment_schedules,id'],
+    //     ]);
 
-        $schedule = InstallmentSchedule::findOrFail($validated['schedule_id']);
+    //     $schedule = InstallmentSchedule::findOrFail($validated['schedule_id']);
 
-        $this->installmentService
-            ->markScheduleAsPaid($schedule);
+    //     $this->installmentService
+    //         ->markScheduleAsPaid($schedule);
 
-        return response()->json([
-            'message' => 'ชำระเงินงวดเรียบร้อย',
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'ชำระเงินงวดเรียบร้อย',
+    //     ]);
+    // }
 
-    public function payFromAdmin(
-    InstallmentSchedule $schedule
-    ): RedirectResponse {
-    $this->installmentService->markScheduleAsPaid($schedule);
+    // public function payFromAdmin(
+    // InstallmentSchedule $schedule
+    // ): RedirectResponse {
+    // $this->installmentService->markScheduleAsPaid($schedule);
 
-    return back()->with('success', 'ชำระงวดเรียบร้อยแล้ว');
-    }
+    // return back()->with('success', 'ชำระงวดเรียบร้อยแล้ว');
+    // }
 }

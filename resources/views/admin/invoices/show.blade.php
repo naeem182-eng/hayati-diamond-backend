@@ -15,7 +15,7 @@
         text-decoration:none;
     "
 >
-    🖨️ Print PDF
+    🧾 ใบเสร็จ / Print
 </a>
 
 <p>
@@ -47,20 +47,12 @@
             <td>{{ $schedule->status }}</td>
            <td>
             @if($schedule->status === 'UNPAID')
-                <form
-                action="{{ route('admin.installments.pay', $schedule) }}"
-                method="POST"
-                style="display:inline"
-                >
-            @csrf
-                <button
-                type="submit"
+                <a
+                href="{{ route('admin.installments.receive', $schedule) }}"
                 class="btn btn-sm btn-primary"
-                onclick="return confirm('ยืนยันรับชำระงวดนี้?')"
                 >
                 รับเงินงวด
-                </button>
-                </form>
+                </a>
             @else
             <span class="text-success">ชำระแล้ว</span>
             @endif

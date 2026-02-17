@@ -24,7 +24,7 @@
                 <td>{{ $item->due_date }}</td>
                 <td>{{ $item->status }}</td>
                 <td>
-                    <a href="{{ route('installments.receive', $item) }}">
+                    <a href="{{ route('admin.installments.receive', $item) }}">
                     รับเงิน
                     </a>
                 </td>
