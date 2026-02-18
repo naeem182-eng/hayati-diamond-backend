@@ -18,32 +18,40 @@ class SaleService
     }
 
     /**
-     * ขายสินค้า 1 ชิ้น
+     * ขายสินค้าหลายชิ้นในใบเดียว
      */
-    public function sellSingleItem(array $data): Invoice
+    public function sell(array $data): Invoice
     {
         return DB::transaction(function () use ($data) {
 
-            // Step 1: Load + Lock Stock
-            $stockItem = $this->loadStockItemForSale($data['stock_item_id']);
+            $stockItems = StockItem::lockForUpdate()
+                ->whereIn('id', $data['stock_item_ids'])
+                ->get();
 
-            // Step 2: Validation
-            $this->assertStockItemCanBeSold($stockItem);
+            if ($stockItems->count() !== count($data['stock_item_ids'])) {
+                throw new Exception('มีสินค้าบางชิ้นไม่ถูกต้อง');
+            }
 
-            // Step 3: Price Calculation
-            [$finalPrice, $discountAmount] = $this->calculateFinalPrice(
-                $stockItem->price_sell,
+            $totalBasePrice = 0;
+
+            foreach ($stockItems as $stockItem) {
+
+                $this->assertStockItemCanBeSold($stockItem);
+
+                $totalBasePrice += $stockItem->price_sell;
+            }
+
+            [$finalTotal, $discountAmount] = $this->calculateFinalPrice(
+                $totalBasePrice,
                 $data
             );
 
-            // Step 4: Create Invoice (ต้องมาก่อน)
             $invoice = $this->createInvoice(
                 $data,
-                $finalPrice,
+                $finalTotal,
                 $discountAmount
             );
 
-            // Step 5: Create Installment Plan (ถ้าเป็นผ่อน)
             if ($invoice->payment_type === Invoice::PAYMENT_INSTALLMENT) {
 
                 $months = (int) ($data['installment_months'] ?? 0);
@@ -56,23 +64,21 @@ class SaleService
                     ->createPlanFromInvoice($invoice, $months);
             }
 
-            // Step 6: Create Invoice Item (snapshot)
-            $this->createInvoiceItem($invoice, $stockItem, $finalPrice);
+            foreach ($stockItems as $stockItem) {
 
-            // Step 7: Mark Stock SOLD
-            $this->markStockItemAsSold($stockItem);
+                InvoiceItem::create([
+                    'invoice_id'    => $invoice->id,
+                    'stock_item_id' => $stockItem->id,
+                    'product_id'    => $stockItem->product_id,
+                    'price_at_sale' => $stockItem->price_sell,
+                    'quantity'      => 1,
+                ]);
+
+                $this->markStockItemAsSold($stockItem);
+            }
 
             return $invoice;
         });
-    }
-
-    /* ==============================
-     * Helpers
-     * ============================== */
-
-    protected function loadStockItemForSale(int $id): StockItem
-    {
-        return StockItem::lockForUpdate()->findOrFail($id);
     }
 
     protected function assertStockItemCanBeSold(StockItem $stockItem): void
@@ -91,6 +97,7 @@ class SaleService
         $discountAmount = 0;
 
         if (!empty($data['discount_type']) && !empty($data['discount_value'])) {
+
             if ($data['discount_type'] === Invoice::DISCOUNT_FIXED) {
                 $discountAmount = $data['discount_value'];
             }
@@ -100,20 +107,23 @@ class SaleService
             }
         }
 
-        return [max($basePrice - $discountAmount, 0), $discountAmount];
+        $final = max($basePrice - $discountAmount, 0);
+
+        return [$final, $discountAmount];
     }
 
     protected function createInvoice(
         array $data,
-        float $finalPrice,
+        float $finalTotal,
         float $discountAmount
     ): Invoice {
+
         $paymentType = $data['payment_type'] ?? Invoice::PAYMENT_CASH;
 
         return Invoice::create([
             'customer_id'     => $data['customer_id']   ?? null,
             'customer_name'   => $data['customer_name'] ?? null,
-            'total_amount'    => $finalPrice,
+            'total_amount'    => $finalTotal,
             'discount_amount' => $discountAmount,
             'discount_type'   => $data['discount_type'] ?? null,
             'promotion_code'  => $data['promotion_code'] ?? null,
@@ -124,20 +134,6 @@ class SaleService
         ]);
     }
 
-    protected function createInvoiceItem(
-        Invoice $invoice,
-        StockItem $stockItem,
-        float $price
-    ): void {
-        InvoiceItem::create([
-            'invoice_id'    => $invoice->id,
-            'stock_item_id' => $stockItem->id,
-            'product_id'    => $stockItem->product_id,
-            'price_at_sale' => $price,
-            'quantity'      => 1,
-        ]);
-    }
-
     protected function markStockItemAsSold(StockItem $stockItem): void
     {
         $stockItem->update([
@@ -145,4 +141,3 @@ class SaleService
         ]);
     }
 }
-

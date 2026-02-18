@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\StockItemController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\InvoiceController;
 use App\Http\Controllers\Admin\AdminInstallmentController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\CustomerController;
 
 use App\Http\Controllers\InstallmentController;
 use App\Http\Controllers\InstallmentPaymentController;
@@ -15,13 +17,11 @@ use App\Models\Invoice;
 
 /*
 |--------------------------------------------------------------------------
-| Root
+| // Admin Dashboard
 |--------------------------------------------------------------------------
 */
-Route::get('/', function () {
-    return redirect()->route('admin.dashboard');
-});
-
+Route::get('/admin/dashboard', [DashboardController::class, 'index'])
+    ->name('admin.dashboard');
 /*
 |--------------------------------------------------------------------------
 | Admin Routes
@@ -29,17 +29,11 @@ Route::get('/', function () {
 */
 Route::prefix('admin')->name('admin.')->group(function () {
 
-    // Dashboard
-    Route::get('/dashboard', function () {
-        $latestInvoices = Invoice::latest()
-        ->take(10)
-        ->get();
-
-        return view('admin.dashboard', compact('latestInvoices'));
-    })->name('dashboard');
-
     // Products
     Route::resource('products', ProductController::class);
+
+    // Customers
+    Route::resource('customers', CustomerController::class);
 
     // Stock Items
     Route::resource('stock-items', StockItemController::class)

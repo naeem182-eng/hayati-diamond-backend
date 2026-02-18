@@ -18,6 +18,7 @@
         <h3>Hayati Admin</h3>
         <ul>
             <li><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+            <li><a href="{{ route('admin.customers.index') }}">👤 Customers</a></li>
             <li><a href="{{ route('admin.products.index') }}">Products</a></li>
             <li><a href="{{ route('admin.stock-items.index') }}">Stock</a></li>
             <li><a href="{{ route('admin.sales.create') }}">Sale</a></li>

@@ -16,7 +16,8 @@ class SaleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'stock_item_id' => ['required', 'exists:stock_items,id'],
+            'stock_item_ids'   => ['required', 'array', 'min:1'],
+            'stock_item_ids.*' => ['exists:stock_items,id'],
 
             'customer_id'   => ['nullable', 'integer'],
             'customer_name' => ['nullable', 'string', 'max:255'],
@@ -29,8 +30,8 @@ class SaleRequest extends FormRequest
                 ]),
             ],
 
-            // ⭐⭐⭐ ตัวที่หายไป และเป็นต้นเหตุทั้งหมด ⭐⭐⭐
             'installment_months' => [
+                'nullable',
                 Rule::requiredIf(
                     $this->input('payment_type') === Invoice::PAYMENT_INSTALLMENT
                 ),
