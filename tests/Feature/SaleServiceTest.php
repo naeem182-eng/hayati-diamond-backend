@@ -22,17 +22,17 @@ class SaleServiceTest extends TestCase
         $stockItem = StockItem::factory()->create([
             'product_id' => $product->id,
             'status' => 'IN_STOCK',
-            'price_sell' => 50000,
         ]);
 
         $service = app(SaleService::class);
 
         // Act
         $invoice = $service->sell([
-        'stock_item_ids' => $stockItem->id,
-        'customer_id'   => null,
-        'customer_name' => 'Walk-in Customer',
-        'payment_type'  => 'CASH',
+            'stock_item_ids' => [$stockItem->id],
+            'sale_prices'    => [$stockItem->id => 50000,],
+            'customer_id'   => null,
+            'customer_name' => 'Walk-in Customer',
+            'payment_type'  => 'CASH',
         ]);
 
 
@@ -63,7 +63,6 @@ class SaleServiceTest extends TestCase
     $stockItem = StockItem::factory()->create([
         'product_id' => $product->id,
         'status' => 'SOLD',
-        'price_sell' => 50000,
     ]);
 
     $service = app(SaleService::class);
@@ -71,10 +70,10 @@ class SaleServiceTest extends TestCase
     $this->expectException(\Exception::class);
 
     $service->sell([
-        'stock_item_ids' => $stockItem->id,
-        'customer_name' => 'Test',
-        'payment_type' => 'CASH',
-    ]);
+    'stock_item_ids' => [$stockItem->id],
+    'price_at_sale'  => [$stockItem->id => 50000,],
+    'customer_name' => 'Test',
+    'payment_type'  => 'CASH',]);
     }
 
 }

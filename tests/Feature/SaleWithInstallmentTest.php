@@ -36,7 +36,6 @@ class SaleWithInstallmentTest extends TestCase
             'gold_weight_actual'   => 3.5,
             'gold_price_at_make'   => 20000,
             'total_cost'           => 30000,
-            'price_sell'           => 50000,
             'status'               => 'IN_STOCK',
         ]);
 
@@ -52,6 +51,7 @@ class SaleWithInstallmentTest extends TestCase
         // 3. ขายสินค้า + ส่วนลด 10%
         $invoice = $saleService->sell([
         'stock_item_ids'     => [$stockItem->id],
+        'sale_prices' => [$stockItem->id => 50000,],
         'customer_name'      => 'Walk-in Customer',
         'payment_type'       => Invoice::PAYMENT_INSTALLMENT,
         'discount_type'      => Invoice::DISCOUNT_PERCENT,

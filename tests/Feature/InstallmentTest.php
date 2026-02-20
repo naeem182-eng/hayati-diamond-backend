@@ -23,7 +23,6 @@ class InstallmentTest extends TestCase
 
         $stockItem = StockItem::factory()->create([
             'product_id' => $product->id,
-            'price_sell' => 60000,
             'status'     => 'IN_STOCK',
         ]);
 

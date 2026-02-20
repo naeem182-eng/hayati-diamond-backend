@@ -17,7 +17,6 @@ class StockItemFactory extends Factory
         'gold_weight_actual' => 1.50,
         'gold_price_at_make' => 30000,
         'total_cost' => 30000,
-        'price_sell' => 50000,
     ];
     }
 
