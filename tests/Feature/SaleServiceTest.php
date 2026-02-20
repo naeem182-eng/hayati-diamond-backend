@@ -28,8 +28,8 @@ class SaleServiceTest extends TestCase
         $service = app(SaleService::class);
 
         // Act
-        $invoice = $service->sellSingleItem([
-        'stock_item_id' => $stockItem->id,
+        $invoice = $service->sell([
+        'stock_item_ids' => $stockItem->id,
         'customer_id'   => null,
         'customer_name' => 'Walk-in Customer',
         'payment_type'  => 'CASH',
@@ -54,4 +54,27 @@ class SaleServiceTest extends TestCase
             'status' => 'SOLD',
         ]);
     }
+
+    #[Test]
+    public function it_cannot_sell_stock_that_is_already_sold()
+    {
+    $product = Product::factory()->create();
+
+    $stockItem = StockItem::factory()->create([
+        'product_id' => $product->id,
+        'status' => 'SOLD',
+        'price_sell' => 50000,
+    ]);
+
+    $service = app(SaleService::class);
+
+    $this->expectException(\Exception::class);
+
+    $service->sell([
+        'stock_item_ids' => $stockItem->id,
+        'customer_name' => 'Test',
+        'payment_type' => 'CASH',
+    ]);
+    }
+
 }

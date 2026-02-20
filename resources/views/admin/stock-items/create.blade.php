@@ -22,7 +22,7 @@
     <input type="text" name="ring_size"><br><br>
 
     <label>Gold Weight (Actual)</label><br>
-    <input type="number" step="0.01" name="gold_weight_actual"><br><br>
+    <input type="number" step="0.001" name="gold_weight_actual"><br><br>
 
     <label>Gold Price at Make</label><br>
     <input type="number" step="0.01" name="gold_price_at_make"><br><br>
@@ -32,9 +32,6 @@
 
     <label>Total Cost</label><br>
     <input type="number" step="0.01" name="total_cost"><br><br>
-
-    <label>Price Sell *</label><br>
-    <input type="number" step="0.01" name="price_sell" required><br><br>
 
     <button type="submit">Save</button>
 </form>

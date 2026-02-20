@@ -4,56 +4,52 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\InstallmentSchedule;
-use App\Models\Payment;
+use App\Services\InstallmentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class AdminInstallmentController extends Controller
 {
+    protected InstallmentService $installmentService;
+
+    public function __construct(InstallmentService $installmentService)
+    {
+        $this->installmentService = $installmentService;
+    }
+
+    /**
+     * แสดงรายการงวดที่ยังไม่ชำระ
+     */
     public function index()
     {
-        $installments = InstallmentSchedule::with('invoice')
-            ->where('status', 'UNPAID')
+        $installments = InstallmentSchedule::with(['plan.invoice'])
+            ->where('status', InstallmentSchedule::STATUS_UNPAID)
             ->orderBy('due_date')
             ->get();
 
         return view('admin.installments.index', compact('installments'));
     }
 
+    /**
+     * หน้า form รับเงินงวด
+     */
     public function receive(InstallmentSchedule $schedule)
     {
         return view('admin.installments.receive', compact('schedule'));
     }
 
-    public function storeReceive(Request $request, InstallmentSchedule $schedule)
-    {
+    /**
+     * บันทึกการรับเงินงวด
+     */
+    public function storeReceive(
+        Request $request,
+        InstallmentSchedule $schedule
+    ) {
         $request->validate([
-            'amount'         => ['required', 'numeric', 'min:0'],
-            'payment_method' => ['nullable', 'string'],
-            'paid_at'        => ['required', 'date'],
-            'note'           => ['nullable', 'string'],
+            // ตอนนี้ service ใช้ amount จาก schedule อยู่แล้ว
+            // ถ้าจะรับ partial payment ค่อยเพิ่มทีหลัง
         ]);
 
-        DB::transaction(function () use ($request, $schedule) {
-
-            // 1️⃣ สร้าง Payment record
-            Payment::create([
-                'invoice_id'     => $schedule->invoice->id,
-                'amount'         => $request->amount,
-                'payment_method' => $request->payment_method,
-                'note'           => $request->note,
-                'paid_at'        => $request->paid_at,
-            ]);
-
-            // 2️⃣ Mark schedule เป็น PAID
-            $schedule->update([
-                'status'  => 'PAID',
-                'paid_at' => $request->paid_at,
-            ]);
-
-            // 3️⃣ refresh invoice status
-            $schedule->invoice->refreshPaymentStatus();
-        });
+        $this->installmentService->markScheduleAsPaid($schedule);
 
         return redirect()
             ->route('admin.installments.index')

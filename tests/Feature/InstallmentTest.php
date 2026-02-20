@@ -123,4 +123,34 @@ class InstallmentTest extends TestCase
     $response->assertStatus(422);
     }
 
+    public function test_it_cannot_pay_same_schedule_twice()
+    {
+    $invoice = Invoice::factory()->create([
+        'payment_type' => Invoice::PAYMENT_INSTALLMENT,
+        'status' => Invoice::STATUS_ACTIVE,
+    ]);
+
+    $plan = InstallmentPlan::factory()->create([
+        'invoice_id' => $invoice->id,
+        'status' => InstallmentPlan::STATUS_ACTIVE,
+    ]);
+
+    $schedule = InstallmentSchedule::factory()->create([
+        'installment_plan_id' => $plan->id,
+        'status' => InstallmentSchedule::STATUS_UNPAID,
+        'amount' => 1000,
+    ]);
+
+    // pay first time
+    $this->postJson('/api/installments/pay', [
+        'schedule_id' => $schedule->id,
+    ])->assertOk();
+
+    // pay second time
+    $this->postJson('/api/installments/pay', [
+        'schedule_id' => $schedule->id,
+    ])->assertStatus(400);
+    }
+
+
 }

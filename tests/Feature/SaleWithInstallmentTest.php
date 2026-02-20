@@ -50,19 +50,19 @@ class SaleWithInstallmentTest extends TestCase
          */
 
         // 3. ขายสินค้า + ส่วนลด 10%
-        $invoice = $saleService->sellSingleItem([
-            'stock_item_id'  => $stockItem->id,
-            'customer_name'  => 'Walk-in Customer',
-            'payment_type'   => 'INSTALLMENT',
-            'discount_type'  => 'PERCENT',
-            'discount_value' => 10, // ลด 10%
+        $invoice = $saleService->sell([
+        'stock_item_ids'     => [$stockItem->id],
+        'customer_name'      => 'Walk-in Customer',
+        'payment_type'       => Invoice::PAYMENT_INSTALLMENT,
+        'discount_type'      => Invoice::DISCOUNT_PERCENT,
+        'discount_value'     => 10,
+        'installment_months' => 5,
         ]);
+
 
         // ราคาควรเหลือ 45,000
         $this->assertEquals(45000, $invoice->total_amount);
 
-        // 4. สร้างแผนผ่อน 5 เดือน
-        $plan = $installmentService->createPlanFromInvoice($invoice, 5);
 
         /**
          * -------------------------

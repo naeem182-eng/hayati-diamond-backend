@@ -12,18 +12,37 @@
 
     {{-- Stock Item --}}
     <label>Stock Item *</label><br>
-    <select name="stock_item_ids[]" multiple size="8" required>
-        @foreach($stockItems as $item)
-            <option
-                value="{{ $item->id }}"
-                {{ in_array($item->id, old('stock_item_ids', [])) ? 'selected' : '' }}
-            >
-                #{{ $item->id }} |
-                {{ $item->product->name }} |
-                {{ number_format($item->price_sell, 2) }}
-            </option>
-        @endforeach
-    </select>
+
+    <table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>Select</th>
+            <th>Product</th>
+            <th>Cost</th>
+            <th>Market</th>
+            <th>Sale Price</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach($stockItems as $item)
+        <tr>
+            <td>
+                <input type="checkbox"
+                       name="stock_item_ids[]"
+                       value="{{ $item->id }}">
+            </td>
+            <td>{{ $item->product->name }}</td>
+            <td>{{ number_format($item->total_cost, 2) }}</td>
+            <td>{{ number_format($item->market_reference, 2) }}</td>
+            <td>
+                <input type="number"
+                       step="0.01"
+                       name="sale_prices[{{ $item->id }}]">
+            </td>
+        </tr>
+    @endforeach
+    </tbody>
+    </table>
     <br><br>
 
     {{-- Customer --}}
@@ -93,18 +112,37 @@
 
     <div>
     Customer:
-    <select name="customer_id">
-        <option value="">Walk-in</option>
+    <select name="customer_id" id="customer_select">
+    <option value="">Walk-in</option>
 
-        @foreach($customers as $customer)
-            <option value="{{ $customer->id }}">
-                {{ $customer->name }} ({{ $customer->phone }})
-            </option>
-        @endforeach
+    @foreach($customers as $customer)
+        <option
+            value="{{ $customer->id }}"
+            data-name="{{ $customer->name }}"
+        >
+            {{ $customer->name }} ({{ $customer->phone }})
+        </option>
+    @endforeach
     </select>
     </div>
 
     <button type="submit">Confirm Sale</button>
 </form>
+
+<script>
+    const select = document.getElementById('customer_select');
+    const nameInput = document.querySelector('[name="customer_name"]');
+
+    select.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+
+    if (this.value === "") {
+        nameInput.value = "";
+    } else {
+        nameInput.value = selectedOption.dataset.name;
+    }
+});
+</script>
+
 
 @endsection

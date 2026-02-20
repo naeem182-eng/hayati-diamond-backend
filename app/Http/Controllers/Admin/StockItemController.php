@@ -21,7 +21,6 @@ class StockItemController extends Controller
     public function create()
     {
         $products = Product::where('is_active', true)->get();
-
         return view('admin.stock-items.create', compact('products'));
     }
 
@@ -31,14 +30,10 @@ class StockItemController extends Controller
             'product_id' => $request->product_id,
             'serial_no' => $request->serial_no,
             'ring_size' => $request->ring_size,
-
             'gold_weight_actual' => $request->gold_weight_actual,
             'gold_price_at_make' => $request->gold_price_at_make,
-
             'diamond_detail' => $request->diamond_detail,
             'total_cost' => $request->total_cost,
-
-            'price_sell' => $request->price_sell,
             'status' => StockItem::STATUS_IN_STOCK,
         ]);
 

@@ -17,18 +17,18 @@ class SaleService
         $this->installmentService = $installmentService;
     }
 
-    /**
-     * ขายสินค้าหลายชิ้นในใบเดียว
-     */
     public function sell(array $data): Invoice
     {
         return DB::transaction(function () use ($data) {
 
+            $stockItemIds = (array) $data['stock_item_ids'];
+            $salePrices   = $data['sale_prices'] ?? [];
+
             $stockItems = StockItem::lockForUpdate()
-                ->whereIn('id', $data['stock_item_ids'])
+                ->whereIn('id', $stockItemIds)
                 ->get();
 
-            if ($stockItems->count() !== count($data['stock_item_ids'])) {
+            if ($stockItems->count() !== count($stockItemIds)) {
                 throw new Exception('มีสินค้าบางชิ้นไม่ถูกต้อง');
             }
 
@@ -38,7 +38,13 @@ class SaleService
 
                 $this->assertStockItemCanBeSold($stockItem);
 
-                $totalBasePrice += $stockItem->price_sell;
+                $price = $salePrices[$stockItem->id] ?? null;
+
+                if (!$price || $price <= 0) {
+                    throw new Exception("กรุณาระบุราคาขายของสินค้า #{$stockItem->id}");
+                }
+
+                $totalBasePrice += $price;
             }
 
             [$finalTotal, $discountAmount] = $this->calculateFinalPrice(
@@ -52,8 +58,14 @@ class SaleService
                 $discountAmount
             );
 
-            if ($invoice->payment_type === Invoice::PAYMENT_INSTALLMENT) {
+            if ($invoice->payment_type === Invoice::PAYMENT_CASH) {
+                $invoice->payments()->create([
+                    'amount' => $invoice->total_amount,
+                    'paid_at' => now(),
+                ]);
+            }
 
+            if ($invoice->payment_type === Invoice::PAYMENT_INSTALLMENT) {
                 $months = (int) ($data['installment_months'] ?? 0);
 
                 if ($months <= 0) {
@@ -70,7 +82,7 @@ class SaleService
                     'invoice_id'    => $invoice->id,
                     'stock_item_id' => $stockItem->id,
                     'product_id'    => $stockItem->product_id,
-                    'price_at_sale' => $stockItem->price_sell,
+                    'price_at_sale' => $salePrices[$stockItem->id],
                     'quantity'      => 1,
                 ]);
 
@@ -85,10 +97,6 @@ class SaleService
     {
         if ($stockItem->status !== StockItem::STATUS_IN_STOCK) {
             throw new Exception('สินค้านี้ถูกขายไปแล้ว');
-        }
-
-        if ($stockItem->price_sell === null) {
-            throw new Exception('สินค้านี้ยังไม่ได้ตั้งราคาขาย');
         }
     }
 

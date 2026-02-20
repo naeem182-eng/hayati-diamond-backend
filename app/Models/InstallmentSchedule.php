@@ -3,9 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class InstallmentSchedule extends Model
 {
+    use HasFactory;
+
+    public const STATUS_UNPAID = 'UNPAID';
+    public const STATUS_PAID   = 'PAID';
+
     protected $fillable = [
         'installment_plan_id',
         'month_no',
@@ -15,32 +21,23 @@ class InstallmentSchedule extends Model
         'status',
     ];
 
-    /**
-     * relation หลัก (ของเดิม)
-     */
     public function plan()
     {
         return $this->belongsTo(InstallmentPlan::class, 'installment_plan_id');
     }
 
-    /**
-     * alias ให้โค้ดที่เรียก installmentPlan ใช้ได้
-     */
     public function installmentPlan()
     {
         return $this->plan();
     }
 
-    /**
-     * shortcut ให้เรียก invoice ได้ตรง ๆ
-     */
     public function invoice()
     {
         return $this->hasOneThrough(
             Invoice::class,
             InstallmentPlan::class,
-            'id',          // FK on InstallmentPlan
-            'id',          // FK on Invoice
+            'id',
+            'id',
             'installment_plan_id',
             'invoice_id'
         );

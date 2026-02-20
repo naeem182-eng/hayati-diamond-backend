@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\InstallmentPlan;
 use App\Models\InstallmentSchedule;
+use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Exceptions\Installment\{
@@ -63,7 +64,7 @@ class InstallmentService
                     'month_no'            => $month,
                     'due_date'            => Carbon::now()->addMonths($month),
                     'amount'              => $monthlyAmount,
-                    'status'              => 'UNPAID',
+                    'status'              => InstallmentSchedule::STATUS_UNPAID,
                 ]);
             }
 
@@ -72,14 +73,13 @@ class InstallmentService
     }
 
     /**
-     * เปลี่ยนสถานะงวดเป็น PAID
-     * (ไม่ยุ่งกับ Invoice อีกต่อไป)
+     * ชำระงวด
      */
     public function markScheduleAsPaid(
         InstallmentSchedule $schedule
     ): void {
 
-        if ($schedule->status === 'PAID') {
+        if ($schedule->status === InstallmentSchedule::STATUS_PAID) {
             throw new ScheduleAlreadyPaidException(
                 'งวดนี้ถูกชำระแล้ว'
             );
@@ -87,20 +87,36 @@ class InstallmentService
 
         DB::transaction(function () use ($schedule) {
 
+            // 1️⃣ สร้าง payment
+            Payment::create([
+                'invoice_id'     => $schedule->plan->invoice->id,
+                'amount'         => $schedule->amount,
+                'payment_method' => null,
+                'note'           => null,
+                'paid_at'        => now(),
+            ]);
+
+            // 2️⃣ อัปเดตงวด
             $schedule->update([
-                'status'  => 'PAID',
+                'status'  => InstallmentSchedule::STATUS_PAID,
                 'paid_at' => now(),
             ]);
 
             $plan = $schedule->plan;
 
+            // 3️⃣ ถ้าไม่มีงวดค้าง → ปิด plan + invoice
             $hasUnpaid = $plan->schedules()
-                ->where('status', 'UNPAID')
+                ->where('status', InstallmentSchedule::STATUS_UNPAID)
                 ->exists();
 
             if (! $hasUnpaid) {
+
                 $plan->update([
                     'status' => InstallmentPlan::STATUS_COMPLETED,
+                ]);
+
+                $plan->invoice->update([
+                    'status' => Invoice::STATUS_PAID,
                 ]);
             }
         });

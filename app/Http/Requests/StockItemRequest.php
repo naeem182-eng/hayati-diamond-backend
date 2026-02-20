@@ -25,7 +25,6 @@ class StockItemRequest extends FormRequest
             'diamond_detail' => ['nullable', 'string'],
 
             'total_cost' => ['nullable', 'numeric', 'min:0'],
-            'price_sell' => ['required', 'numeric', 'min:0'],
         ];
     }
 }

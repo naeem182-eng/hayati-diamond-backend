@@ -8,6 +8,7 @@ use App\Services\InstallmentService;
 use Illuminate\Http\Request;
 use App\Exceptions\Installment\InstallmentAlreadyExistsException;
 use Illuminate\Http\RedirectResponse;
+use App\Exceptions\Installment\ScheduleAlreadyPaidException;
 
 class InstallmentController extends Controller
 {
@@ -54,21 +55,24 @@ class InstallmentController extends Controller
      *
      * POST /api/installments/pay
      */
-    // public function paySchedule(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'schedule_id' => ['required', 'exists:installment_schedules,id'],
-    //     ]);
+    public function paySchedule(Request $request)
+    {
+    $schedule = InstallmentSchedule::findOrFail($request->schedule_id);
 
-    //     $schedule = InstallmentSchedule::findOrFail($validated['schedule_id']);
+    try {
+        $this->installmentService->markScheduleAsPaid($schedule);
 
-    //     $this->installmentService
-    //         ->markScheduleAsPaid($schedule);
+        return response()->json([
+            'message' => 'Payment recorded successfully'
+        ], 200);
 
-    //     return response()->json([
-    //         'message' => 'ชำระเงินงวดเรียบร้อย',
-    //     ]);
-    // }
+    } catch (ScheduleAlreadyPaidException $e) {
+
+        return response()->json([
+            'message' => $e->getMessage()
+        ], 400);
+    }
+    }
 
     // public function payFromAdmin(
     // InstallmentSchedule $schedule

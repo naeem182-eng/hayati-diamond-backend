@@ -8,6 +8,15 @@ use Mpdf\Mpdf;
 
 class InvoiceController extends Controller
 {
+    public function index()
+    {
+    $invoices = \App\Models\Invoice::latest()->paginate(20);
+
+    return view('admin.invoices.index', compact('invoices'));
+    }
+
+
+
     public function show(Invoice $invoice)
     {
         $invoice->load([
