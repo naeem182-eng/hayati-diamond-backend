@@ -1,0 +1,36 @@
+# ใช้ PHP 8.2 พร้อม Apache
+FROM php:8.2-apache
+
+# ติดตั้ง dependency ที่ Laravel ต้องใช้
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# เปิด mod_rewrite
+RUN a2enmod rewrite
+
+# ตั้งค่า DocumentRoot ไปที่ /public
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+    /etc/apache2/sites-available/*.conf \
+    /etc/apache2/apache2.conf \
+    /etc/apache2/conf-available/*.conf
+
+# Copy project เข้า container
+COPY . /var/www/html
+
+# ตั้ง working directory
+WORKDIR /var/www/html
+
+# ติดตั้ง Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# install dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# ตั้ง permission
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+EXPOSE 80
