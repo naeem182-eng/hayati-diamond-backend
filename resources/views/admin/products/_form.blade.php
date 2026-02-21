@@ -4,7 +4,7 @@
 <label>Category</label><br>
 <input type="text" name="category" value="{{ old('category', $product->category ?? '') }}"><br><br>
 
-<label>Image URL</label><br>
+<label>Image Path</label><br>
 <input type="text" name="image_url" value="{{ old('image_url', $product->image_url ?? '') }}"><br><br>
 
 <label>

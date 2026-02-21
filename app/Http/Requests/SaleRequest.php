@@ -19,6 +19,9 @@ class SaleRequest extends FormRequest
             'stock_item_ids'   => ['required', 'array', 'min:1'],
             'stock_item_ids.*' => ['exists:stock_items,id'],
 
+            'sale_prices'   => ['required', 'array'],
+            'sale_prices.*' => ['nullable', 'numeric', 'min:0.01'],
+
             'customer_id'   => ['nullable', 'integer'],
             'customer_name' => ['nullable', 'string', 'max:255'],
 
