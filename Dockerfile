@@ -49,3 +49,5 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
+
+CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
