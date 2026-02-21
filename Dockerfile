@@ -39,6 +39,15 @@ COPY . /var/www/html
 # ตั้ง working directory
 WORKDIR /var/www/html
 
+# ติดตั้ง Node
+RUN apt-get update && apt-get install -y nodejs npm
+
+# install frontend deps
+RUN npm install
+
+# build Vite
+RUN npm run build
+
 # ติดตั้ง Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -50,4 +59,4 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 80
 
-CMD ["sh", "-c", "php artisan migrate --force && apache2-foreground"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=80"]
