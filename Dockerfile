@@ -28,7 +28,7 @@ WORKDIR /var/www/html
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # install dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # ตั้ง permission
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
