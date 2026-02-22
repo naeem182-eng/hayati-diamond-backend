@@ -27,6 +27,9 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 10000
 
-CMD php artisan migrate --force && apache2-foreground
+CMD php artisan migrate --force && \
+    sed -i "s/80/${PORT}/g" /etc/apache2/ports.conf && \
+    sed -i "s/:80/:${PORT}/g" /etc/apache2/sites-available/000-default.conf && \
+    apache2-foreground
