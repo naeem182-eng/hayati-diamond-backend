@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::orderBy('created_at', 'desc')->paginate(20);
+    // รับค่าจาก URL ถ้าไม่มีให้ใช้ id และ desc เป็นค่าเริ่มต้น
+    $sort = $request->get('sort', 'id');
+    $direction = $request->get('direction', 'desc');
 
-        return view('admin.products.index', compact('products'));
+    $products = Product::orderBy($sort, $direction)->paginate(15);
+
+    return view('admin.products.index', compact('products', 'sort', 'direction'));
     }
 
     public function create()

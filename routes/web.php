@@ -44,8 +44,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('gold-price', [GoldPriceController::class, 'store'])->name('gold-price.store');
 
     // Stock Items
-    Route::resource('stock-items', StockItemController::class)
-        ->only(['index', 'create', 'store']);
+    Route::resource('stock-items', StockItemController::class);
+    Route::get('stock-items/{stockItem}/edit', [StockItemController::class, 'edit'])->name('admin.stock-items.edit');
+    Route::put('stock-items/{stockItem}', [StockItemController::class, 'update'])->name('admin.stock-items.update');
+    Route::delete('stock-items/{stockItem}', [StockItemController::class, 'destroy'])->name('admin.stock-items.destroy');
 
     // Sales
     Route::get('sales/create', [SaleController::class, 'create'])

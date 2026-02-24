@@ -14,45 +14,41 @@
 <body>
 <div style="display:flex">
 
-    <aside style="width:200px; padding:10px; background:#f5f5f5">
+<aside style="min-width: fit-content; white-space: nowrap; padding: 20px; background: #f5f5f5; border-right: 1px solid #ddd; height: 100vh;">
+
     <h3>Hayati Admin</h3>
-    <p style="font-size:14px; color:gray;">
-    👤 {{ auth()->user()->name }}
+    <p style="font-size: 14px; color: gray; margin-bottom: 20px;">
+        👤 {{ auth()->user()->name }}
     </p>
-
-
-    <ul class="space-y-2">
-
-    <li><a href="{{ route('admin.dashboard') }}">📊 Dashboard</a></li>
-    <li><a href="{{ route('admin.gold-price.create') }}">🪙 Update Gold Price(18K)</a></li>
     <br>
-
-    <h4>Sales</h4>
-    <li><a href="{{ route('admin.sales.create') }}">➕ New Sale</a></li>
-    <li><a href="{{ route('admin.payments.index') }}">💰 Payments</a></li>
-    <li><a href="{{ route('admin.invoices.index') }}">📄 Invoices</a></li>
-    <li><a href="{{ route('admin.installments.index') }}">📑 Installments</a></li>
+    <ul style="list-style: none; padding: 0;">
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.dashboard') }}" style="text-decoration: none; color: #333;">📊 Dashboard</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.gold-price.create') }}" style="text-decoration: none; color: #333;">🪙 Update Gold Price(18K)</a></li>
     <br>
-
-    <h4>Inventory</h4>
-    <li><a href="{{ route('admin.products.index') }}">📦 Products</a></li>
-    <li><a href="{{ route('admin.stock-items.index') }}">🏷 Stock</a></li>
+        <h4 style="margin-top: 20px; color: #C8A951;">Sales</h4>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.sales.create') }}" style="text-decoration: none; color: #333;">➕ New Sale</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.payments.index') }}" style="text-decoration: none; color: #333;">💰 Payments</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.invoices.index') }}" style="text-decoration: none; color: #333;">📄 Invoices</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.installments.index') }}" style="text-decoration: none; color: #333;">📑 Installments</a></li>
     <br>
-
-    <h4>CRM</h4>
-    <li><a href="{{ route('admin.customers.index') }}">👤 Customers</a></li>
-
+        <h4 style="margin-top: 20px; color: #C8A951;">Inventory</h4>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.products.index') }}" style="text-decoration: none; color: #333;">📦 Products</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.stock-items.index') }}" style="text-decoration: none; color: #333;">🏷 Stock</a></li>
+    <br>
+        <h4 style="margin-top: 20px; color: #C8A951;">CRM</h4>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.customers.index') }}" style="text-decoration: none; color: #333;">👤 Customers</a></li>
     </ul>
+    <br>
 
-    <hr>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
     <form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit" style="margin-top:10px;">
-        🚪 Logout
-    </button>
+        @csrf
+        <button type="submit" style="width: 100%; padding: 8px; cursor: pointer; background: #eee; border: 1px solid #ccc; border-radius: 4px;">
+            🚪 Logout
+        </button>
     </form>
-
-    </aside>
+</aside>
 
     <main style="padding:20px; flex:1">
         @yield('content')

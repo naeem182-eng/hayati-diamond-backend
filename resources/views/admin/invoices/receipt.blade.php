@@ -144,7 +144,7 @@ body {
             {{-- รูปสินค้า --}}
             <td width="70" valign="top">
                 @if(!empty($item->product->image_url) && file_exists($imagePath))
-                    <img src="file://{{ $imagePath }}" width="60" style="border:1px solid #eee; padding:3px;">
+                    <img src="{{ $imagePath }}" width="60" style="border:1px solid #eee; padding:3px;">
                 @endif
             </td>
 
