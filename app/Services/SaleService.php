@@ -120,28 +120,37 @@ class SaleService
         return [$final, $discountAmount];
     }
 
-    protected function createInvoice(
-        array $data,
-        float $finalTotal,
-        float $discountAmount
-    ): Invoice {
+    protected function createInvoice(array $data, float $finalTotal, float $discountAmount): Invoice
+    {
+    // 1. ดึง ID ลูกค้ามาตั้งต้น
+    $customerId = $data['customer_id'] ?? null;
+    $customerName = $data['customer_name'] ?? null;
 
-        $paymentType = $data['payment_type'] ?? Invoice::PAYMENT_CASH;
-
-        return Invoice::create([
-            'customer_id'     => $data['customer_id']   ?? null,
-            'customer_name'   => $data['customer_name'] ?? null,
-            'total_amount'    => $finalTotal,
-            'discount_amount' => $discountAmount,
-            'discount_type'   => $data['discount_type'] ?? null,
-            'promotion_code'  => $data['promotion_code'] ?? null,
-            'payment_type'    => $paymentType,
-            'status'          => $paymentType === Invoice::PAYMENT_INSTALLMENT
-                ? Invoice::STATUS_ACTIVE
-                : Invoice::STATUS_PAID,
-        ]);
+    // 2. ถ้าไม่มี ID แต่มีชื่อ ลองค้นหาในระบบ (ดักเผื่อหน้าบ้านส่งมาแต่ชื่อ)
+    if (!$customerId && !empty($customerName)) {
+        $foundCustomer = \App\Models\Customer::where('name', $customerName)->first();
+        if ($foundCustomer) {
+            $customerId = $foundCustomer->id;
+        }
     }
 
+    // 3. กำหนดประเภทการชำระ (สำคัญ! ของเดิมขาดบรรทัดนี้ในฟังก์ชัน)
+    $paymentType = $data['payment_type'] ?? Invoice::PAYMENT_CASH;
+
+    // 4. บันทึกลงฐานข้อมูล
+    return Invoice::create([
+        'customer_id'     => $customerId,
+        'customer_name'   => $customerName,
+        'total_amount'    => $finalTotal,
+        'discount_amount' => $discountAmount,
+        'discount_type'   => $data['discount_type'] ?? null,
+        'promotion_code'  => $data['promotion_code'] ?? null,
+        'payment_type'    => $paymentType,
+        'status'          => ($paymentType === Invoice::PAYMENT_INSTALLMENT)
+            ? Invoice::STATUS_ACTIVE
+            : Invoice::STATUS_PAID,
+    ]);
+    }
     protected function markStockItemAsSold(StockItem $stockItem): void
     {
         $stockItem->update([
@@ -149,3 +158,4 @@ class SaleService
         ]);
     }
 }
+

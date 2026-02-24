@@ -108,9 +108,17 @@ body {
     <div class="brand-name">HAYATI DIAMOND</div>
     <div class="document-title">ใบเสร็จรับเงิน</div>
 
-    เลขที่เอกสาร: INV-{{ $invoice->id }}<br>
-    วันที่: {{ $invoice->created_at->format('d/m/Y') }}<br>
-    ลูกค้า: {{ $invoice->customer_name ?? '-' }}
+    <div style="margin-top: 10px;">
+        <strong>เลขที่เอกสาร:</strong> INV-{{ $invoice->id }}<br>
+        <strong>วันที่:</strong> {{ $invoice->created_at->format('d/m/Y') }}<br>
+        <strong>ลูกค้า:</strong> {{ $invoice->customer->name ?? $invoice->customer_name }}<br>
+
+        {{-- ถ้ามี Relation กับ Customer ให้ดึงที่อยู่มาโชว์ --}}
+        @if($invoice->customer)
+            <strong>ที่อยู่:</strong> {{ $invoice->customer->address }}<br>
+            <strong>เบอร์โทร:</strong> {{ $invoice->customer->phone }}
+        @endif
+    </div>
 </td>
 
 <td width="30%" align="right">

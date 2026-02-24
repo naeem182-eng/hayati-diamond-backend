@@ -15,21 +15,21 @@ class InvoiceController extends Controller
     return view('admin.invoices.index', compact('invoices'));
     }
 
-
-
     public function show(Invoice $invoice)
     {
-        $invoice->load([
-            'items.stockItem.product',
-            'installmentPlan.schedules',
-        ]);
+    $invoice->load([
+        'customer',
+        'items.stockItem.product',
+        'installmentPlan.schedules',
+    ]);
 
-        return view('admin.invoices.show', compact('invoice'));
+    return view('admin.invoices.show', compact('invoice'));
     }
 
     public function printPdf(Invoice $invoice)
     {
     $invoice->load([
+        'customer',
         'items.stockItem.product',
         'installmentPlan.schedules',
         'payments'
