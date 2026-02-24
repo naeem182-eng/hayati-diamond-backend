@@ -88,7 +88,7 @@ class InstallmentService
         DB::transaction(function () use ($schedule) {
 
             // 1️⃣ สร้าง payment
-            Payment::create([
+            \App\Models\Payment::create([
                 'invoice_id'     => $schedule->plan->invoice->id,
                 'amount'         => $schedule->amount,
                 'payment_method' => null,
