@@ -82,11 +82,11 @@ return [
 
 'pgsql' => [
     'driver' => 'pgsql',
-    'host' => '52.74.252.201', // ใส่ IP ตรงๆ
-    'port' => '5432',
-    'database' => 'postgres',
-    'username' => 'postgres.wjyvjrkxzpsnnbodmoik', // ใส่แบบพ่วง ID ตรงๆ
-    'password' => 'Hayati2026Admin', // ใส่รหัสผ่านตรงๆ
+    'host' => env('DB_HOST', '52.74.252.201'),
+    'port' => env('DB_PORT', '5432'),
+    'database' => env('DB_DATABASE', 'postgres'),
+    'username' => env('DB_USERNAME', 'postgres.wjyvjrkxzpsnnbodmoik'),
+    'password' => env('DB_PASSWORD'), // รหัสผ่านห้ามใส่ ให้ดึงจาก env เท่านั้น
     'charset' => 'utf8',
     'prefix' => '',
     'prefix_indexes' => true,
