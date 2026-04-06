@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\StockItemController;
 use App\Http\Controllers\Admin\SaleController;
@@ -22,6 +22,13 @@ use App\Http\Controllers\InstallmentController;
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+
+Route::get('/run-migrate-force', function () {
+    $exitCode = Artisan::call('migrate', ['--force' => true]);
+    return "Migration finished with exit code: " . $exitCode;
+});
+
 
 /*
 |--------------------------------------------------------------------------

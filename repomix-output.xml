@@ -154,6 +154,7 @@ docs/test-plan.md
 docs/Untitled.pdf
 docs/Untitled.png
 docs/Untitled.sql
+ipconfig
 isUniqueConstraintError($e)
 package.json
 phpunit.xml
@@ -166,7 +167,7 @@ public/images/logo.png
 public/images/products/101GSixHeartCrown.png
 public/images/products/101SixHeartCrown.png
 public/images/products/102CrownedRadiance.png
-public/images/products/102GCrowned Radiance.png
+public/images/products/102GCrownedRadiance.png
 public/images/products/103Crown.png
 public/images/products/103GCrown.png
 public/images/products/104GTwistCrown.png
@@ -177,6 +178,8 @@ public/images/products/106ClusterCrown.png
 public/images/products/106GClusterCrown.png
 public/images/products/107FiveRadiant.png
 public/images/products/107GFiveRadiant.png
+public/images/products/108GSevenRadiant.png
+public/images/products/108SevenRadiant.png
 public/images/products/201BypassRadiant.png
 public/images/products/201GBypassRadiant.png
 public/images/products/202CircleCrownHalo.png
@@ -189,6 +192,7 @@ public/images/products/302EmpressDoubleHalo.png
 public/images/products/302GEmpressDoubleHalo.png
 public/images/products/303FloralDoubleHalo.png
 public/images/products/303GFloralDoubleHaloGold.png
+public/images/products/W101RadiantLV.png
 public/images/qr-line.png
 public/images/signature.png
 public/index.php
@@ -216,6 +220,7 @@ resources/views/admin/products/edit.blade.php
 resources/views/admin/products/index.blade.php
 resources/views/admin/sales/create.blade.php
 resources/views/admin/stock-items/create.blade.php
+resources/views/admin/stock-items/edit.blade.php
 resources/views/admin/stock-items/index.blade.php
 resources/views/auth/confirm-password.blade.php
 resources/views/auth/forgot-password.blade.php
@@ -361,55 +366,6 @@ abstract class Controller
 {
     //
 }
-</file>
-
-<file path="app/Models/Payment.php">
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Payment extends Model
-{
-    protected $fillable = [
-        'invoice_id',
-        'amount',
-        'payment_method',
-        'note',
-        'paid_at',
-    ];
-
-    protected $casts = [
-        'paid_at' => 'datetime',
-    ];
-
-    public function invoice()
-    {
-        return $this->belongsTo(Invoice::class);
-    }
-}
-</file>
-
-<file path="artisan">
-#!/usr/bin/env php
-<?php
-
-use Illuminate\Foundation\Application;
-use Symfony\Component\Console\Input\ArgvInput;
-
-define('LARAVEL_START', microtime(true));
-
-// Register the Composer autoloader...
-require __DIR__.'/vendor/autoload.php';
-
-// Bootstrap Laravel and handle the command...
-/** @var Application $app */
-$app = require_once __DIR__.'/bootstrap/app.php';
-
-$status = $app->handleCommand(new ArgvInput);
-
-exit($status);
 </file>
 
 <file path="bootstrap/cache/.gitignore">
@@ -592,6 +548,10 @@ class UserFactory extends Factory
         ]);
     }
 }
+</file>
+
+<file path="ipconfig">
+
 </file>
 
 <file path="public/.htaccess">
@@ -791,7 +751,7 @@ LOG_STACK=single
 LOG_DEPRECATIONS_CHANNEL=null
 LOG_LEVEL=debug
 
-DB_CONNECTION=sqlite
+# DB_CONNECTION=sqlite
 # DB_HOST=127.0.0.1
 # DB_PORT=3306
 # DB_DATABASE=laravel
@@ -1256,69 +1216,6 @@ class PaymentController extends Controller
             'cashToday',
             'installmentToday'
         ));
-    }
-}
-</file>
-
-<file path="app/Http/Controllers/Admin/ProductController.php">
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\ProductRequest;
-use App\Models\Product;
-use Illuminate\Http\Request;
-
-class ProductController extends Controller
-{
-    public function index(Request $request)
-    {
-    // รับค่าจาก URL ถ้าไม่มีให้ใช้ id และ desc เป็นค่าเริ่มต้น
-    $sort = $request->get('sort', 'id');
-    $direction = $request->get('direction', 'desc');
-
-    $products = Product::orderBy($sort, $direction)->paginate(15);
-
-    return view('admin.products.index', compact('products', 'sort', 'direction'));
-    }
-
-    public function create()
-    {
-        return view('admin.products.create');
-    }
-
-    public function store(ProductRequest $request)
-    {
-        Product::create($request->validated());
-
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product created successfully');
-    }
-
-    public function edit(Product $product)
-    {
-        return view('admin.products.edit', compact('product'));
-    }
-
-    public function update(ProductRequest $request, Product $product)
-    {
-        $product->update($request->validated());
-
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product updated successfully');
-    }
-
-    public function destroy(Product $product)
-    {
-        // ❗ business-safe: ยังไม่เช็ค stockItems ก่อน (เพิ่มภายหลังได้)
-        $product->delete();
-
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product deleted successfully');
     }
 }
 </file>
@@ -1951,40 +1848,32 @@ class InvoiceItem extends Model
 }
 </file>
 
-<file path="app/Providers/AppServiceProvider.php">
+<file path="app/Models/Payment.php">
 <?php
 
-namespace App\Providers;
+namespace App\Models;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Pagination\Paginator;
+use Illuminate\Database\Eloquent\Model;
 
-class AppServiceProvider extends ServiceProvider
+class Payment extends Model
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
+    protected $fillable = [
+        'invoice_id',
+        'amount',
+        'payment_method',
+        'note',
+        'paid_at',
+    ];
+
+    protected $casts = [
+        'paid_at' => 'datetime',
+    ];
+
+    public function invoice()
     {
-        //
+        return $this->belongsTo(Invoice::class);
     }
-
-    /**
-     * Bootstrap any application services.
-     */
-    public function boot(): void
-    {
-
-    Paginator::useBootstrapFive();
-
-    if ($this->app->environment('production')) {
-        URL::forceScheme('https');
-    }
-
-
-    }
-};
+}
 </file>
 
 <file path="app/Services/PaymentService.php">
@@ -2142,6 +2031,27 @@ class GuestLayout extends Component
         return view('layouts.guest');
     }
 }
+</file>
+
+<file path="artisan">
+#!/usr/bin/env php
+<?php
+
+use Illuminate\Foundation\Application;
+use Symfony\Component\Console\Input\ArgvInput;
+
+define('LARAVEL_START', microtime(true));
+
+// Register the Composer autoloader...
+require __DIR__.'/vendor/autoload.php';
+
+// Bootstrap Laravel and handle the command...
+/** @var Application $app */
+$app = require_once __DIR__.'/bootstrap/app.php';
+
+$status = $app->handleCommand(new ArgvInput);
+
+exit($status);
 </file>
 
 <file path="config/app.php">
@@ -3730,6 +3640,44 @@ ALTER TABLE `installment_schedules` ADD FOREIGN KEY (`installment_plan_id`) REFE
 
 </file>
 
+<file path="phpunit.xml">
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="BROADCAST_CONNECTION" value="null"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <env name="NIGHTWATCH_ENABLED" value="false"/>
+    </php>
+</phpunit>
+</file>
+
 <file path="postcss.config.js">
 export default {
     plugins: {
@@ -3857,597 +3805,6 @@ Alpine.start();
 @endsection
 </file>
 
-<file path="resources/views/admin/customers/index.blade.php">
-@extends('admin.layout')
-
-@section('content')
-
-<h2>👤 Customers</h2>
-
-<a href="{{ route('admin.customers.create') }}">➕ Add Customer</a>
-
-<table border="1" cellpadding="8" cellspacing="0">
-    <tr>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Email</th>
-        <th></th>
-    </tr>
-
-@foreach($customers as $customer)
-<tr>
-    <td>{{ $customer->name }}</td>
-    <td>{{ $customer->phone }}</td>
-    <td>{{ $customer->email }}</td>
-    <td>
-        <a href="{{ route('admin.customers.show', $customer) }}">
-            View
-        </a>
-    </td>
-</tr>
-@endforeach
-
-</table>
-
-<br>
-{{ $customers->links() }}
-
-@endsection
-</file>
-
-<file path="resources/views/admin/customers/show.blade.php">
-@extends('admin.layout')
-
-@section('content')
-
-<h2>👤 Customer Detail</h2>
-
-<p><strong>Name:</strong> {{ $customer->name }}</p>
-<p><strong>Phone:</strong> {{ $customer->phone }}</p>
-<p><strong>Email:</strong> {{ $customer->email }}</p>
-<p><strong>Address:</strong> {{ $customer->address }}</p>
-
-<hr>
-
-<h3>💰 Total Spent</h3>
-<p>{{ number_format($totalSpent,2) }}</p>
-
-<h3>📉 Outstanding</h3>
-<p>{{ number_format($totalOutstanding,2) }}</p>
-
-<hr>
-
-<h3>🧾 Invoices</h3>
-
-<table border="1" cellpadding="8" cellspacing="0">
-    <tr>
-        <th>#</th>
-        <th>Date</th>
-        <th>Total</th>
-        <th>Status</th>
-        <th></th>
-    </tr>
-
-@foreach($customer->invoices as $invoice)
-<tr>
-    <td>#{{ $invoice->id }}</td>
-    <td>{{ $invoice->created_at->format('Y-m-d') }}</td>
-    <td>{{ number_format($invoice->total_amount,2) }}</td>
-    <td>{{ $invoice->status }}</td>
-    <td>
-        <a href="{{ route('admin.invoices.show', $invoice) }}">
-            View
-        </a>
-    </td>
-</tr>
-@endforeach
-
-</table>
-
-@endsection
-</file>
-
-<file path="resources/views/admin/gold-prices/create.blade.php">
-@extends('admin.layout')
-
-@section('content')
-<h1>Update Gold Price (18K)</h1>
-
-@if(session('success'))
-    <div style="color: green;">
-        {{ session('success') }}
-    </div>
-@endif
-
-@if($latest)
-    <p>
-        <strong>Current Price:</strong>
-        {{ number_format($latest->price_per_gram, 2) }} / g
-        ({{ $latest->effective_date }})
-    </p>
-@endif
-
-<form method="POST" action="{{ route('admin.gold-price.store') }}">
-    @csrf
-
-    <div>
-        <label>Price per gram:</label>
-        <input type="number" step="0.01" name="price_per_gram" required>
-    </div>
-
-    <div>
-        <label>Effective Date:</label>
-        <input type="date" name="effective_date" value="{{ date('Y-m-d') }}" required>
-    </div>
-
-    <button type="submit">Save</button>
-</form>
-
-@endsection
-</file>
-
-<file path="resources/views/admin/invoices/index.blade.php">
-@extends('admin.layout')
-
-@section('content')
-
-<h2 class="text-xl font-bold mb-4">📄 Invoices</h2>
-
-<table class="table-auto w-full border-collapse border border-gray-300">
-    <thead class="bg-gray-200">
-        <tr>
-            <th class="border p-2">ID</th>
-            <th class="border p-2">Customer</th>
-            <th class="border p-2">Type</th>
-            <th class="border p-2">Status</th>
-            <th class="border p-2 text-right">Total</th>
-            <th class="border p-2 text-right">Outstanding</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse($invoices as $invoice)
-            <tr>
-                <td class="border p-2">
-                    <a href="{{ route('admin.invoices.show', $invoice->id) }}"
-                       class="text-blue-600 underline">
-                        #{{ $invoice->id }}
-                    </a>
-                </td>
-
-                <td class="border p-2">
-                    {{ $invoice->customer_name ?? '-' }}
-                </td>
-
-                <td class="border p-2">
-                    {{ $invoice->payment_type }}
-                </td>
-
-                <td class="border p-2">
-                    @if($invoice->status === \App\Models\Invoice::STATUS_PAID)
-                        <span class="text-green-600 font-semibold">PAID</span>
-                    @else
-                        <span class="text-yellow-600 font-semibold">ACTIVE</span>
-                    @endif
-                </td>
-
-                <td class="border p-2 text-right">
-                    {{ number_format($invoice->total_amount, 0) }}
-                </td>
-
-                <td class="border p-2 text-right">
-                    @if($invoice->outstanding_balance > 0)
-                            {{ number_format($invoice->outstanding_balance, 0) }}
-                    @else
-                            -
-                    @endif
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="6" class="border p-4 text-center">
-                    No invoices found.
-                </td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
-
-<div class="mt-4">
-    {{ $invoices->links() }}
-</div>
-
-@endsection
-</file>
-
-<file path="resources/views/admin/invoices/receipt.blade.php">
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<title>ใบเสร็จรับเงิน #{{ $invoice->id }}</title>
-
-<style>
-
-body {
-    font-family: thsarabun;
-    font-size: 16px;
-    color: #1a1a1a;
-    position: relative;
-}
-
-.wrapper {
-    width: 180mm;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1; /* ให้เนื้อหาอยู่เหนือ watermark */
-}
-
-
-/* ===== HEADER ===== */
-.header-table {
-    width: 100%;
-}
-
-.brand-name {
-    font-size: 28px;
-    font-weight: bold;
-    color: #1f3c88;
-    letter-spacing: 1px;
-}
-
-.document-title {
-    font-size: 22px;
-    font-weight: bold;
-    margin-top: 5px;
-}
-
-.logo {
-    width: 110px;
-}
-
-/* ===== TABLE ===== */
-.table,
-.installment-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.table th, .table td,
-.installment-table th, .installment-table td {
-    border: 1px solid #C8A951;
-    padding: 6px;
-}
-
-.table th,
-.installment-table th {
-    background-color: #f8f4e8;
-    font-weight: bold;
-}
-
-.text-right { text-align: right; }
-.text-center { text-align: center; }
-
-.summary {
-    width: 100%;
-    margin-top: 12px;
-}
-
-.summary td {
-    padding: 5px;
-}
-
-.signature-section {
-    margin-top: 40px;
-}
-
-.signature-box {
-    width: 45%;
-    display: inline-block;
-    text-align: center;
-}
-
-.signature-line {
-    margin-top: 55px;
-    border-top: 1px solid #C8A951;
-}
-
-.footer {
-    margin-top: 35px;
-    font-size: 14px;
-}
-
-</style>
-</head>
-
-<body>
-<div class="wrapper">
-
-{{-- HEADER --}}
-<table class="header-table">
-<tr>
-<td width="70%">
-    <div class="brand-name">HAYATI DIAMOND</div>
-    <div class="document-title">ใบเสร็จรับเงิน</div>
-
-    เลขที่เอกสาร: INV-{{ $invoice->id }}<br>
-    วันที่: {{ $invoice->created_at->format('d/m/Y') }}<br>
-    ลูกค้า: {{ $invoice->customer_name ?? '-' }}
-</td>
-
-<td width="30%" align="right">
-@if(file_exists(public_path('images/logo.png')))
-    <img src="file://{{ public_path('images/logo.png') }}" class="logo">
-@endif
-</td>
-</tr>
-</table>
-
-{{-- ITEMS --}}
-<table class="table">
-<tr>
-    <th width="5%">#</th>
-    <th width="45%">รายละเอียดสินค้า</th>
-    <th width="15%">ราคาต่อหน่วย</th>
-    <th width="10%">จำนวน</th>
-    <th width="15%">ยอดรวม</th>
-</tr>
-
-@foreach($invoice->items as $index => $item)
-<tr>
-<td class="text-center">{{ $index + 1 }}</td>
-<td>
-    @php
-        $imagePath = public_path('images/products/' . $item->product->image_url);
-    @endphp
-
-    <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            {{-- รูปสินค้า --}}
-            <td width="70" valign="top">
-                @if(!empty($item->product->image_url) && file_exists($imagePath))
-                    <img src="{{ $imagePath }}" width="60" style="border:1px solid #eee; padding:3px;">
-                @endif
-            </td>
-
-            {{-- รายละเอียด --}}
-            <td valign="top" style="padding-left:8px;">
-
-                <div style="font-weight:bold; font-size:15px;">
-                    {{ $item->product->name ?? '-' }}
-                </div>
-
-                @if(!empty($item->stockItem->gold_weight_actual))
-                    <div style="font-size:13px;">
-                        Gold Weight: {{ $item->stockItem->gold_weight_actual }} g
-                    </div>
-                @endif
-
-                @if(!empty($item->stockItem->diamond_detail))
-                    <div style="font-size:13px;">
-                        Diamond: {{ $item->stockItem->diamond_detail }}
-                    </div>
-                @endif
-
-            </td>
-        </tr>
-    </table>
-</td>
-
-<td class="text-right">{{ number_format($item->price_at_sale,2) }}</td>
-<td class="text-center">{{ $item->quantity }}</td>
-<td class="text-right">
-    {{ number_format($item->price_at_sale * $item->quantity,2) }}
-</td>
-</tr>
-@endforeach
-</table>
-
-{{-- SUMMARY --}}
-<table class="summary">
-<tr>
-<td width="80%" align="right">จำนวนเงินรวมทั้งสิ้น</td>
-<td width="20%" align="right">{{ number_format($invoice->total_amount,2) }}</td>
-</tr>
-<tr>
-<td align="right">ชำระแล้ว</td>
-<td align="right">{{ number_format($invoice->paid_total,2) }}</td>
-</tr>
-<tr>
-<td align="right"><strong>ยอดคงเหลือ</strong></td>
-<td align="right"><strong>{{ number_format($invoice->outstanding_balance,2) }}</strong></td>
-</tr>
-</table>
-
-{{-- INSTALLMENT --}}
-@if($invoice->payment_type === 'INSTALLMENT' && $invoice->installmentPlan)
-<h3 style="margin-top:18px;">ตารางผ่อนชำระ</h3>
-
-<table class="installment-table">
-<tr>
-    <th>งวดที่</th>
-    <th>กำหนดชำระ</th>
-    <th>จำนวนเงิน</th>
-    <th>สถานะ</th>
-    <th>วันที่รับเงิน</th>
-</tr>
-
-@foreach($invoice->installmentPlan->schedules as $s)
-<tr>
-    <td class="text-center">{{ $s->month_no }}</td>
-    <td class="text-center">{{ \Carbon\Carbon::parse($s->due_date)->format('d/m/Y') }}</td>
-    <td class="text-right">{{ number_format($s->amount,2) }}</td>
-    <td class="text-center">
-        @if($s->status === 'PAID')
-            <span style="color:green;">ชำระแล้ว</span>
-        @else
-            <span style="color:#C8A951;">ค้างชำระ</span>
-        @endif
-    </td>
-    <td class="text-center">
-        {{ $s->paid_at ? \Carbon\Carbon::parse($s->paid_at)->format('d/m/Y') : '-' }}
-    </td>
-</tr>
-@endforeach
-
-</table>
-@endif
-
-{{-- SIGN --}}
-<div class="signature-section">
-<table width="100%" style="margin-top:70px;">
-    <tr>
-        {{-- ผู้จ่ายเงิน --}}
-        <td width="50%" align="center" valign="bottom">
-            <div style="height:90px;"></div>
-            <div style="border-top:1px solid #C8A951; width:70%; margin:0 auto;"></div>
-            ___________________________<br>
-            <div style="margin-top:5px;">ผู้จ่ายเงิน</div>
-        </td>
-
-        {{-- ผู้รับเงิน --}}
-        <td width="50%" align="center" valign="bottom">
-
-            @php
-                $signaturePath = public_path('images/signature.png');
-            @endphp
-
-            <div style="height:90px;">
-                @if(file_exists($signaturePath))
-                    <img src="file://{{ $signaturePath }}"
-                         style="max-height:70px; display:block; margin:0 auto;">
-                @endif
-            </div>
-            ___________________________<br>
-            <div style="border-top:1px solid #C8A951; width:70%; margin:0 auto;"></div>
-            <div style="margin-top:5px;">ผู้รับเงิน</div>
-
-        </td>
-    </tr>
-</table>
-</div>
-
-
-<div class="footer">
-
-<table width="100%" cellpadding="0" cellspacing="0">
-<tr>
-
-    {{-- ซ้าย: ข้อมูลร้าน --}}
-    <td width="60%" valign="top">
-        <strong>Hayati Diamond</strong><br>
-        ที่อยู่ 11/29 หมู่ 3 ต.บ้านกลาง อ.อ่าวลึก จ.กระบี่ 81110<br>
-        โทร: 093-735-0033
-    </td>
-
-    {{-- ขวา: ลายเซ็น + QR --}}
-    <td width="40%" align="right" valign="top">
-
-        {{-- QR LINE --}}
-        @php
-            $qrPath = public_path('images/qr-line.png');
-        @endphp
-
-        @if(file_exists($qrPath))
-            <img src="file://{{ $qrPath }}" width="90"><br>
-            <span style="font-size:12px;">Add LINE Official</span>
-        @endif
-
-    </td>
-
-</tr>
-</table>
-
-</div>
-
-
-</div>
-</body>
-</html>
-</file>
-
-<file path="resources/views/admin/payments/index.blade.php">
-@extends('admin.layout')
-
-@section('content')
-
-<h2 class="text-xl font-bold mb-4">💰 Payments Ledger</h2>
-
-{{-- ===== Summary ===== --}}
-<div class="mb-6 p-4 bg-gray-100 rounded">
-    <p><strong>Today Total:</strong> {{ number_format($todayTotal, 2) }}</p>
-    <p>Cash Sale: {{ number_format($cashToday, 2) }}</p>
-    <p>Installment Received: {{ number_format($installmentToday, 2) }}</p>
-</div>
-
-{{-- ===== Filter ===== --}}
-<form method="GET" class="mb-4">
-    <input type="date" name="date" value="{{ request('date') }}">
-    <button type="submit">Filter</button>
-</form>
-
-<table class="table-auto w-full border-collapse border border-gray-300">
-    <thead class="bg-gray-200">
-        <tr>
-            <th class="border p-2">Date</th>
-            <th class="border p-2">Invoice</th>
-            <th class="border p-2">Customer</th>
-            <th class="border p-2">Type</th>
-            <th class="border p-2 text-right">Amount</th>
-            <th class="border p-2">Note</th>
-        </tr>
-    </thead>
-    <tbody>
-        @forelse($payments as $payment)
-            <tr>
-                <td class="border p-2">
-                    {{ $payment->paid_at?->format('Y-m-d H:i') }}
-                </td>
-
-                <td class="border p-2">
-                    <a href="{{ route('admin.invoices.show', $payment->invoice_id) }}"
-                       class="text-blue-600 underline">
-                        #{{ $payment->invoice_id }}
-                    </a>
-                </td>
-
-                <td class="border p-2">
-                    {{ $payment->invoice->customer_name ?? '-' }}
-                </td>
-
-                <td class="border p-2">
-                    @if($payment->invoice?->payment_type === \App\Models\Invoice::PAYMENT_CASH)
-                        <span class="text-green-600 font-semibold">CASH</span>
-                    @else
-                        <span class="text-yellow-600 font-semibold">INSTALLMENT</span>
-                    @endif
-                </td>
-
-                <td class="border p-2 text-right">
-                    {{ number_format($payment->amount, 2) }}
-                </td>
-
-                <td class="border p-2">
-                    {{ $payment->note ?? '-' }}
-                </td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="6" class="border p-4 text-center">
-                    No payments found.
-                </td>
-            </tr>
-        @endforelse
-    </tbody>
-</table>
-
-<div class="mt-4">
-    {{ $payments->links() }}
-</div>
-
-@endsection
-</file>
-
 <file path="resources/views/admin/products/create.blade.php">
 @extends('admin.layout')
 
@@ -4471,6 +3828,73 @@ body {
     @csrf @method('PUT')
     @include('admin.products._form')
 </form>
+@endsection
+</file>
+
+<file path="resources/views/admin/stock-items/edit.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    <h1>✏️ Edit Stock Item: {{ $stockItem->serial_no }}</h1>
+
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px;">
+        <form action="{{ route('admin.stock-items.update', $stockItem->id) }}" method="POST">
+            @csrf
+            @method('PUT')
+
+            <div style="margin-bottom: 15px;">
+                <label>Product Model:</label><br>
+                <select name="product_id" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+                    @foreach($products as $product)
+                        <option value="{{ $product->id }}" {{ $stockItem->product_id == $product->id ? 'selected' : '' }}>
+                            {{ $product->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label>Serial Number:</label>
+                <input type="text" name="serial_no" value="{{ old('serial_no', $stockItem->serial_no) }}" style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Ring Size:</label>
+                    <input type="text" name="ring_size" value="{{ old('ring_size', $stockItem->ring_size) }}" style="width: 100%; padding: 8px; margin-top: 5px;">
+                </div>
+                <div style="flex: 1;">
+                    <label>Gold Weight (g):</label>
+                    <input type="number" step="0.001" name="gold_weight_actual" value="{{ old('gold_weight_actual', $stockItem->gold_weight_actual) }}" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label>Gold Price @Make:</label>
+                    <input type="number" step="0.01" name="gold_price_at_make" value="{{ old('gold_price_at_make', $stockItem->gold_price_at_make) }}" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Total Cost:</label>
+                    <input type="number" step="0.01" name="total_cost" value="{{ old('total_cost', $stockItem->total_cost) }}" style="width: 100%; padding: 8px; margin-top: 5px;" required>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label>Diamond Detail:</label>
+                <textarea name="diamond_detail" rows="3" style="width: 100%; padding: 8px; margin-top: 5px;">{{ old('diamond_detail', $stockItem->diamond_detail) }}</textarea>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button type="submit" style="background: #C8A951; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    💾 Update Stock Item
+                </button>
+                <a href="{{ route('admin.stock-items.index') }}" style="text-decoration: none; color: #666; padding: 10px; font-size: 14px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 </file>
 
@@ -19804,6 +19228,69 @@ function something()
 }
 </file>
 
+<file path="app/Http/Controllers/Admin/ProductController.php">
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductRequest;
+use App\Models\Product;
+use Illuminate\Http\Request;
+
+class ProductController extends Controller
+{
+    public function index(Request $request)
+    {
+    // รับค่าจาก URL ถ้าไม่มีให้ใช้ id และ desc เป็นค่าเริ่มต้น
+    $sort = $request->get('sort', 'id');
+    $direction = $request->get('direction', 'desc');
+
+    $products = Product::orderBy($sort, $direction)->paginate(15);
+
+    return view('admin.products.index', compact('products', 'sort', 'direction'));
+    }
+
+    public function create()
+    {
+        return view('admin.products.create');
+    }
+
+    public function store(ProductRequest $request)
+    {
+        Product::create($request->validated());
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Product created successfully');
+    }
+
+    public function edit(Product $product)
+    {
+        return view('admin.products.edit', compact('product'));
+    }
+
+    public function update(ProductRequest $request, Product $product)
+    {
+        $product->update($request->validated());
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Product updated successfully');
+    }
+
+    public function destroy(Product $product)
+    {
+        // ❗ business-safe: ยังไม่เช็ค stockItems ก่อน (เพิ่มภายหลังได้)
+        $product->delete();
+
+        return redirect()
+            ->route('admin.products.index')
+            ->with('success', 'Product deleted successfully');
+    }
+}
+</file>
+
 <file path="app/Http/Controllers/Admin/SaleController.php">
 <?php
 
@@ -19846,79 +19333,6 @@ class SaleController extends Controller
                 ->withErrors($e->getMessage())
                 ->withInput();
         }
-    }
-}
-</file>
-
-<file path="app/Http/Controllers/Admin/StockItemController.php">
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\StockItemRequest;
-use App\Models\Product;
-use App\Models\StockItem;
-use Illuminate\Http\Request;
-
-class StockItemController extends Controller
-{
-    public function index(Request $request)
-    {
-    // รับค่าสำหรับการ Sorting & Filtering
-    $sort = $request->get('sort', 'id');
-    $direction = $request->get('direction', 'desc');
-    $search = $request->get('search');
-    $status = $request->get('status');
-
-    // สร้าง Query และ Join กับ Products เพื่อให้ Sort ตามชื่อสินค้าได้
-    $query = StockItem::query()
-        ->select('stock_items.*')
-        ->join('products', 'stock_items.product_id', '=', 'products.id');
-
-    // Logic การกรอง (Filter)
-    if ($request->filled('search')) {
-        $query->where('products.name', 'like', '%' . $search . '%');
-    }
-    if ($request->filled('status')) {
-        $query->where('stock_items.status', $status);
-    }
-
-    // Logic การเรียงลำดับ (Sorting)
-    if ($sort == 'product_name') {
-        $query->orderBy('products.name', $direction);
-    } else {
-        $query->orderBy('stock_items.' . $sort, $direction);
-    }
-
-    // ดึงข้อมูลพร้อมรักษาค่า Query String ใน Link หน้าถัดไป
-    $stockItems = $query->with(['product', 'invoiceItem'])->paginate(20)->withQueryString();
-
-    return view('admin.stock-items.index', compact('stockItems', 'sort', 'direction'));
-    }
-
-    public function create()
-    {
-        $products = Product::where('is_active', true)->get();
-        return view('admin.stock-items.create', compact('products'));
-    }
-
-    public function store(StockItemRequest $request)
-    {
-        StockItem::create([
-            'product_id' => $request->product_id,
-            'serial_no' => $request->serial_no,
-            'ring_size' => $request->ring_size,
-            'gold_weight_actual' => $request->gold_weight_actual,
-            'gold_price_at_make' => $request->gold_price_at_make,
-            'diamond_detail' => $request->diamond_detail,
-            'total_cost' => $request->total_cost,
-            'status' => StockItem::STATUS_IN_STOCK,
-        ]);
-
-        return redirect()
-            ->route('admin.stock-items.index')
-            ->with('success', 'Stock item created successfully');
     }
 }
 </file>
@@ -20075,6 +19489,37 @@ class User extends Authenticatable
         'remember_token',
     ];
 }
+</file>
+
+<file path="app/Providers/AppServiceProvider.php">
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\Paginator;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot()
+{
+    DB::purge('pgsql');
+}
+
+};
 </file>
 
 <file path="bootstrap/app.php">
@@ -20288,119 +19733,237 @@ class DatabaseSeeder extends Seeder
 }
 </file>
 
-<file path="resources/views/admin/installments/index.blade.php">
+<file path="resources/views/admin/customers/show.blade.php">
 @extends('admin.layout')
 
 @section('content')
-<h1>บิลผ่อนค้าง</h1>
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">👤 Customer Detail</h2>
+        <a href="{{ route('admin.customers.index') }}" style="text-decoration: none; color: #666;">⬅️ Back to List</a>
+    </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Invoice</th>
-            <th>งวดที่</th>
-            <th>ยอด</th>
-            <th>กำหนดชำระ</th>
-            <th>สถานะ</th>
-            <th>จัดการ</th>
-        </tr>
-    </thead>
+    {{-- ส่วนข้อมูลลูกค้า --}}
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 25px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <p><strong>Name:</strong> {{ $customer->name }}</p>
+                <p><strong>Phone:</strong> {{ $customer->phone }}</p>
+            </div>
+            <div>
+                <p><strong>Email:</strong> {{ $customer->email }}</p>
+                <p><strong>Address:</strong> {{ $customer->address }}</p>
+            </div>
+        </div>
+    </div>
 
-    <tbody>
-        @foreach ($installments as $item)
-           <tr>
-                <td>#{{ $item->installmentPlan->invoice_id }}</td>
-                <td>งวดที่ {{ $item->month_no }}</td>
-                <td>{{ number_format($item->amount, 2) }}</td>
-                <td>{{ $item->due_date }}</td>
-                <td>{{ $item->status }}</td>
-                <td>
-                    <a href="{{ route('admin.installments.receive', $item) }}">
-                    รับเงิน
-                    </a>
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+    {{-- ส่วนสรุปยอดเงิน --}}
+    <div style="display: flex; gap: 20px; margin-bottom: 25px;">
+        <div style="flex: 1; background: #d4edda; padding: 20px; border-radius: 8px; border-left: 5px solid #28a745;">
+            <h3 style="margin: 0; color: #155724; font-size: 16px;">💰 Total Spent</h3>
+            <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0;">{{ number_format($totalSpent, 2) }}</p>
+        </div>
+        <div style="flex: 1; background: #f8d7da; padding: 20px; border-radius: 8px; border-left: 5px solid #dc3545;">
+            <h3 style="margin: 0; color: #721c24; font-size: 16px;">📉 Outstanding</h3>
+            <p style="font-size: 24px; font-weight: bold; margin: 10px 0 0 0;">{{ number_format($totalOutstanding, 2) }}</p>
+        </div>
+    </div>
+
+    {{-- ส่วนตาราง Invoices --}}
+    <h3 style="margin-bottom: 15px;">🧾 Invoices History</h3>
+    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #f4f4f4; border-bottom: 2px solid #C8A951;">
+                    <th style="padding: 12px;"># ID</th>
+                    <th style="padding: 12px;">Date</th>
+                    <th style="padding: 12px; text-align: right;">Total Amount</th>
+                    <th style="padding: 12px; text-align: center;">Status</th>
+                    <th style="padding: 12px; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($customer->invoices as $invoice)
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px;">#{{ $invoice->id }}</td>
+                    <td style="padding: 12px;">{{ $invoice->created_at->format('Y-m-d') }}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold;">{{ number_format($invoice->total_amount, 2) }}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="padding: 4px 8px; border-radius: 12px; font-size: 11px; background: {{ $invoice->status == 'PAID' ? '#d4edda' : '#fff3cd' }};">
+                            {{ $invoice->status }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <a href="{{ route('admin.invoices.show', $invoice) }}" style="text-decoration: none; color: #007bff; font-weight: bold;">
+                            🔍 View
+                        </a>
+                    </td>
+                </tr>
+                @endforeach
+                @if($customer->invoices->isEmpty())
+                <tr>
+                    <td colspan="5" style="padding: 20px; text-align: center; color: #999;">No invoice history found.</td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+</div>
 @endsection
 </file>
 
-<file path="resources/views/admin/installments/receive.blade.php">
+<file path="resources/views/admin/gold-prices/create.blade.php">
 @extends('admin.layout')
 
 @section('content')
-<h1>รับเงินงวด</h1>
-
-<p>
-    Invoice #{{ $schedule->installmentPlan->invoice->id }}<br>
-    ลูกค้า: {{ $schedule->installmentPlan->invoice->customer->name ?? '-' }}
-</p>
-
-<hr>
-
-<table border="1" cellpadding="8" cellspacing="0">
-    <tr>
-        <th>งวดที่</th>
-        <td>{{ $schedule->month_no }}</td>
-    </tr>
-    <tr>
-        <th>วันครบกำหนด</th>
-        <td>{{ $schedule->due_date }}</td>
-    </tr>
-    <tr>
-        <th>ยอดงวด</th>
-        <td>{{ number_format($schedule->amount, 2) }}</td>
-    </tr>
-    <tr>
-        <th>สถานะ</th>
-        <td>{{ $schedule->status }}</td>
-    </tr>
-</table>
-
-<hr>
-    <form method="POST" action="{{ route('admin.installments.receive.store', $schedule) }}">
-    @csrf
-
-    <div>
-        <label>จำนวนเงินที่รับ *</label><br>
-        <input
-            type="number"
-            name="amount"
-            step="0.01"
-            value="{{ old('amount', $schedule->amount) }}"
-            required
-        >
-        @error('amount')
-            <div style="color:red">{{ $message }}</div>
-        @enderror
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h1 style="margin: 0;">🪙 Update Gold Price (18K)</h1>
     </div>
 
-    <br>
+    @if(session('success'))
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+            ✅ {{ session('success') }}
+        </div>
+    @endif
 
-    <div>
-        <label>วันที่รับเงิน</label><br>
-        <input
-            type="date"
-            name="paid_at"
-            value="{{ old('paid_at', now()->toDateString()) }}"
-        >
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start;">
+
+        {{-- ฝั่งซ้าย: แสดงราคาปัจจุบัน --}}
+        <div style="background: linear-gradient(135deg, #C8A951 0%, #E2C986 100%); padding: 30px; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(200, 169, 81, 0.3);">
+            <h3 style="margin: 0; font-size: 18px; opacity: 0.9;">Current Market Price</h3>
+            @if($latest)
+                <div style="margin-top: 15px;">
+                    <span style="font-size: 40px; font-weight: bold;">{{ number_format($latest->price_per_gram, 2) }}</span>
+                    <span style="font-size: 18px;"> / gram</span>
+                </div>
+                <p style="margin-top: 10px; font-size: 14px; opacity: 0.8;">
+                    📅 Effective Date: {{ \Carbon\Carbon::parse($latest->effective_date)->format('d M Y') }}
+                </p>
+            @else
+                <p style="margin-top: 15px;">No price data available.</p>
+            @endif
+        </div>
+
+        {{-- ฝั่งขวา: ฟอร์มกรอกราคาใหม่ --}}
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #eee;">
+            <h3 style="margin: 0 0 20px 0; color: #333;">➕ Update New Price</h3>
+
+            <form method="POST" action="{{ route('admin.gold-price.store') }}">
+                @csrf
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px;">Price per gram (THB):</label>
+                    <input type="number" step="0.01" name="price_per_gram" placeholder="0.00"
+                           style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;" required>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px;">Effective Date:</label>
+                    <input type="date" name="effective_date" value="{{ date('Y-m-d') }}"
+                           style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px;" required>
+                </div>
+
+                <button type="submit" style="width: 100%; background: #333; color: white; border: none; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                    💾 Save Price Update
+                </button>
+            </form>
+        </div>
+
     </div>
 
-    <br>
+    {{-- หมายเหตุเล็กๆ --}}
+    <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-radius: 8px; border-left: 4px solid #C8A951;">
+        <p style="margin: 0; font-size: 13px; color: #666;">
+            <strong>Note:</strong> ราคานี้จะถูกนำไปใช้คำนวณ <em>"Gold Today"</em> ในหน้าคลังสินค้า (Stock) เพื่อเปรียบเทียบกับราคาต้นทุน ณ วันที่ผลิต (Gold@Make)
+        </p>
+    </div>
+</div>
+@endsection
+</file>
 
-    <div>
-        <label>Note (โอน / เงินสด / รายละเอียดอื่น)</label><br>
-        <textarea name="note" rows="3">{{ old('note') }}</textarea>
+<file path="resources/views/admin/invoices/index.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="margin: 0;">📄 Invoices (รายการใบแจ้งหนี้)</h2>
+        {{-- ถ้ามีปุ่มสร้าง Invoice ใหม่ สามารถเพิ่มตรงนี้ได้ --}}
     </div>
 
-    <br>
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                    <th style="padding: 15px; color: #333;">ID</th>
+                    <th style="padding: 15px; color: #333;">Customer</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">Type</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">Status</th>
+                    <th style="padding: 15px; color: #333; text-align: right;">Total</th>
+                    <th style="padding: 15px; color: #333; text-align: right;">Outstanding</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($invoices as $invoice)
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fdfbf5'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 15px;">
+                        <strong style="color: #C8A951;">#{{ $invoice->id }}</strong>
+                    </td>
+                    <td style="padding: 15px;">
+                        {{ $invoice->customer_name ?? '-' }}
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <span style="font-size: 13px; color: #666; background: #f0f0f0; padding: 2px 8px; border-radius: 4px;">
+                            {{ $invoice->payment_type }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        @if($invoice->status === \App\Models\Invoice::STATUS_PAID)
+                            <span style="background: #d4edda; color: #155724; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">
+                                PAID
+                            </span>
+                        @else
+                            <span style="background: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold;">
+                                ACTIVE
+                            </span>
+                        @endif
+                    </td>
+                    <td style="padding: 15px; text-align: right; font-weight: bold;">
+                        {{ number_format($invoice->total_amount, 0) }}
+                    </td>
+                    <td style="padding: 15px; text-align: right;">
+                        @if($invoice->outstanding_balance > 0)
+                            <span style="color: #dc3545; font-weight: bold;">
+                                {{ number_format($invoice->outstanding_balance, 0) }}
+                            </span>
+                        @else
+                            <span style="color: #ccc;">-</span>
+                        @endif
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <a href="{{ route('admin.invoices.show', $invoice->id) }}"
+                           style="text-decoration: none; color: #007bff; font-weight: bold; font-size: 13px; border: 1px solid #007bff; padding: 5px 10px; border-radius: 4px;">
+                            🔍 View
+                        </a>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="7" style="padding: 40px; text-align: center; color: #999;">
+                        🚫 ไม่พบข้อมูลใบแจ้งหนี้
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-    <button type="submit">
-        ยืนยันรับเงินงวด
-    </button>
-</form>
-
+    <div style="margin-top: 20px;">
+        {{ $invoices->links() }}
+    </div>
+</div>
 @endsection
 </file>
 
@@ -20422,6 +19985,107 @@ class DatabaseSeeder extends Seeder
 </html>
 </file>
 
+<file path="resources/views/admin/payments/index.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="margin: 0;">💰 Payments Ledger (สมุดบัญชีรายรับ)</h2>
+
+        {{-- ===== Filter Section ===== --}}
+        <form method="GET" style="display: flex; gap: 10px; align-items: center; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <label style="font-size: 14px; color: #666;">เลือกวันที่:</label>
+            <input type="date" name="date" value="{{ request('date', date('Y-m-d')) }}"
+                   style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" style="background: #333; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+                🔍 Filter
+            </button>
+            @if(request('date'))
+                <a href="{{ route('admin.payments.index') }}" style="text-decoration: none; font-size: 13px; color: #666;">ล้างค่า</a>
+            @endif
+        </form>
+    </div>
+
+    {{-- ===== Summary Dashboard ===== --}}
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+        <div style="background: linear-gradient(135deg, #C8A951 0%, #E2C986 100%); padding: 20px; border-radius: 12px; color: white; box-shadow: 0 4px 12px rgba(200, 169, 81, 0.2);">
+            <small style="opacity: 0.9; display: block; margin-bottom: 5px;">ยอดรับรวมวันนี้</small>
+            <strong style="font-size: 24px;">{{ number_format($todayTotal, 2) }}</strong>
+            <span style="font-size: 14px;"> THB</span>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border-left: 5px solid #28a745; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <small style="color: gray; display: block; margin-bottom: 5px;">Cash Sale (ขายสด)</small>
+            <strong style="font-size: 24px; color: #28a745;">{{ number_format($cashToday, 2) }}</strong>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border-left: 5px solid #ffc107; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <small style="color: gray; display: block; margin-bottom: 5px;">Installment Received (ค่างวด)</small>
+            <strong style="font-size: 24px; color: #856404;">{{ number_format($installmentToday, 2) }}</strong>
+        </div>
+    </div>
+
+    {{-- ===== Table Section ===== --}}
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                    <th style="padding: 15px; color: #333;">วันที่/เวลา</th>
+                    <th style="padding: 15px; color: #333;">Invoice</th>
+                    <th style="padding: 15px; color: #333;">Customer</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">Type</th>
+                    <th style="padding: 15px; color: #333; text-align: right;">Amount</th>
+                    <th style="padding: 15px; color: #333;">Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($payments as $payment)
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fdfbf5'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 15px; font-size: 14px; color: #666;">
+                        {{ $payment->paid_at?->format('d/m/Y H:i') }}
+                    </td>
+                    <td style="padding: 15px;">
+                        <a href="{{ route('admin.invoices.show', $payment->invoice_id) }}"
+                           style="color: #C8A951; text-decoration: none; font-weight: bold;">
+                           #{{ $payment->invoice_id }}
+                        </a>
+                    </td>
+                    <td style="padding: 15px;">
+                        {{ $payment->invoice->customer_name ?? '-' }}
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        @if($payment->invoice?->payment_type === \App\Models\Invoice::PAYMENT_CASH)
+                            <span style="background: #e9f7ef; color: #1e8449; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold;">CASH</span>
+                        @else
+                            <span style="background: #fff9e6; color: #9a7d0a; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold;">INSTALLMENT</span>
+                        @endif
+                    </td>
+                    <td style="padding: 15px; text-align: right; font-weight: bold; color: #333;">
+                        {{ number_format($payment->amount, 2) }}
+                    </td>
+                    <td style="padding: 15px; font-size: 13px; color: #888; font-style: italic;">
+                        {{ $payment->note ?? '-' }}
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
+                        ไม่พบข้อมูลรายรับในรายการนี้
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px;">
+        {{ $payments->links() }}
+    </div>
+</div>
+@endsection
+</file>
+
 <file path="resources/views/admin/products/_form.blade.php">
 <label>Name</label><br>
 <input type="text" name="name" value="{{ old('name', $product->name ?? '') }}"><br><br>
@@ -20439,189 +20103,6 @@ class DatabaseSeeder extends Seeder
 </label><br><br>
 
 <button type="submit">Save</button>
-</file>
-
-<file path="resources/views/admin/products/index.blade.php">
-@extends('admin.layout')
-
-@section('content')
-<h1>Products</h1>
-
-<a href="{{ route('admin.products.create') }}">➕ New Product</a>
-
-<table>
-    <thead>
-    <tr>
-        <th><a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => $direction == 'asc' ? 'desc' : 'asc']) }}">ID {!! $sort == 'id' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}</a></th>
-        <th><a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => $direction == 'asc' ? 'desc' : 'asc']) }}">Name {!! $sort == 'name' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}</a></th>
-        <th><a href="{{ request()->fullUrlWithQuery(['sort' => 'category', 'direction' => $direction == 'asc' ? 'desc' : 'asc']) }}">Category {!! $sort == 'category' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}</a></th>
-        <th><a href="{{ request()->fullUrlWithQuery(['sort' => 'is_active', 'direction' => $direction == 'asc' ? 'desc' : 'asc']) }}">Active {!! $sort == 'is_active' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}</a></th>
-        <th>Image</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach($products as $product)
-        <tr>
-            <td>{{ $product->id }}</td>
-            <td>{{ $product->name }}</td>
-            <td>{{ $product->category }}</td>
-            <td>{{ $product->is_active ? 'Yes' : 'No' }}</td>
-            <td>
-                @if($product->image_url)
-                <img src="{{ asset('images/products/' . $product->image_url) }}" width="60">
-                @endif
-            </td>
-            <td>
-                <a href="{{ route('admin.products.edit', $product) }}">✏️ Edit</a>
-                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" style="display:inline">
-                    @csrf @method('DELETE')
-                    <button onclick="return confirm('Delete?')">🗑</button>
-                </form>
-            </td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
-
-{{ $products->links('pagination::simple-bootstrap-4') }}
-@endsection
-</file>
-
-<file path="resources/views/admin/stock-items/create.blade.php">
-@extends('admin.layout')
-
-@section('content')
-<h1>Create Stock Item</h1>
-
-<form method="POST" action="{{ route('admin.stock-items.store') }}">
-    @csrf
-
-    <label>Product *</label><br>
-    <select name="product_id" required>
-        <option value="">-- select product --</option>
-        @foreach($products as $product)
-            <option value="{{ $product->id }}">{{ $product->name }}</option>
-        @endforeach
-    </select>
-    <br><br>
-
-    <label>Serial No</label><br>
-    <input type="text" name="serial_no"><br><br>
-
-    <label>Ring Size</label><br>
-    <input type="text" name="ring_size"><br><br>
-
-    <label>Gold Weight (Actual)</label><br>
-    <input type="number" step="0.001" name="gold_weight_actual"><br><br>
-
-    <label>Gold Price at Make</label><br>
-    <input type="number" step="0.01" name="gold_price_at_make"><br><br>
-
-    <label>Diamond Detail</label><br>
-    <textarea name="diamond_detail"></textarea><br><br>
-
-    <label>Total Cost</label><br>
-    <input type="number" step="0.01" name="total_cost"><br><br>
-
-    <button type="submit">Save</button>
-</form>
-@endsection
-</file>
-
-<file path="resources/views/admin/stock-items/index.blade.php">
-@extends('admin.layout')
-
-@section('content')
-<h1>Stock Items</h1>
-
-{{-- ส่วน Filter Bar --}}
-<div style="margin-bottom: 20px; background: #f8f4e8; padding: 15px; border-radius: 8px; border: 1px solid #C8A951;">
-    <form action="{{ route('admin.stock-items.index') }}" method="GET" style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาชื่อสินค้า..." style="padding: 5px; border: 1px solid #ccc;">
-
-        <select name="status" style="padding: 5px; border: 1px solid #ccc;">
-            <option value="">-- สถานะทั้งหมด --</option>
-            <option value="IN_STOCK" {{ request('status') == 'IN_STOCK' ? 'selected' : '' }}>In Stock</option>
-            <option value="SOLD" {{ request('status') == 'SOLD' ? 'selected' : '' }}>Sold</option>
-        </select>
-
-        <button type="submit" style="background: #C8A951; color: white; border: none; padding: 5px 15px; cursor: pointer;">ค้นหา</button>
-        <a href="{{ route('admin.stock-items.index') }}" style="text-decoration: none; color: #666; font-size: 13px;">ล้างค่า</a>
-    </form>
-</div>
-
-<a href="{{ route('admin.stock-items.create') }}">➕ New Stock Item</a>
-<br><br>
-
-<table border="1" cellpadding="6" cellspacing="0" width="100%" style="border-collapse: collapse;">
-    <thead>
-        <tr style="background-color: #eee;">
-            <th>
-                <a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => ($sort == 'id' && $direction == 'asc') ? 'desc' : 'asc']) }}">
-                    ID {!! $sort == 'id' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}
-                </a>
-            </th>
-            <th>
-                <a href="{{ request()->fullUrlWithQuery(['sort' => 'product_name', 'direction' => ($sort == 'product_name' && $direction == 'asc') ? 'desc' : 'asc']) }}">
-                    Product {!! $sort == 'product_name' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}
-                </a>
-            </th>
-            <th>Product Pic</th>
-            <th>Serial</th>
-            <th>Ring Size</th>
-            <th>
-                <a href="{{ request()->fullUrlWithQuery(['sort' => 'gold_weight_actual', 'direction' => ($sort == 'gold_weight_actual' && $direction == 'asc') ? 'desc' : 'asc']) }}">
-                    Gold (g) {!! $sort == 'gold_weight_actual' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}
-                </a>
-            </th>
-            {{-- คอลัมน์ Diamond Detail ที่เพิ่มใหม่ --}}
-            <th>Diamond Detail</th>
-            <th>Total Cost</th>
-            <th>Δ Gold</th>
-            <th>Sold Price</th>
-            <th>
-                <a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => ($sort == 'status' && $direction == 'asc') ? 'desc' : 'asc']) }}">
-                    Status {!! $sort == 'status' ? ($direction == 'asc' ? '▲' : '▼') : '↕' !!}
-                </a>
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach($stockItems as $item)
-        <tr>
-            <td align="center">{{ $item->id }}</td>
-            <td><strong>{{ $item->product->name }}</strong></td>
-            <td align="center">
-                @if($item->product && $item->product->image_url)
-                    <img src="{{ asset('images/products/' . $item->product->image_url) }}" width="60">
-                @else - @endif
-            </td>
-            <td>{{ $item->serial_no ?? '-' }}</td>
-            <td align="center">{{ $item->ring_size ?? '-' }}</td>
-            <td align="right">{{ number_format($item->gold_weight_actual, 2) }}</td>
-
-            {{-- แสดง Diamond Detail --}}
-            <td style="font-size: 0.85em;">{{ $item->diamond_detail ?? '-' }}</td>
-
-            <td align="right">{{ number_format($item->total_cost, 2) }}</td>
-            <td align="right" style="color: {{ $item->gold_difference >= 0 ? 'green' : 'red' }}">
-                {{ number_format($item->gold_difference, 2) }}
-            </td>
-            <td align="right">
-                @if($item->status === 'SOLD' && $item->invoiceItem)
-                    {{ number_format($item->invoiceItem->price_at_sale, 0) }}
-                @else - @endif
-            </td>
-            <td align="center"><small>{{ $item->status }}</small></td>
-        </tr>
-    @endforeach
-    </tbody>
-</table>
-
-<br>
-{{ $stockItems->links() }}
-@endsection
 </file>
 
 <file path="resources/views/welcome.blade.php">
@@ -20957,254 +20438,938 @@ export default defineConfig({
 });
 </file>
 
-<file path="phpunit.xml">
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="vendor/autoload.php"
-         colors="true"
->
-    <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
-        <testsuite name="Feature">
-            <directory>tests/Feature</directory>
-        </testsuite>
-    </testsuites>
-    <source>
-        <include>
-            <directory>app</directory>
-        </include>
-    </source>
-    <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="NIGHTWATCH_ENABLED" value="false"/>
-    </php>
-</phpunit>
+<file path="app/Http/Controllers/Admin/StockItemController.php">
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StockItemRequest;
+use App\Models\Product;
+use App\Models\StockItem;
+use App\Models\GoldPrice;
+use Illuminate\Http\Request;
+
+class StockItemController extends Controller
+{
+    public function index(Request $request)
+    {
+        // รับค่าสำหรับการ Sorting & Filtering
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'desc');
+        $search = $request->get('search');
+        $status = $request->get('status');
+
+        // สร้าง Query และ Join กับ Products เพื่อให้ Sort ตามชื่อสินค้าได้
+        $query = StockItem::query()
+            ->select('stock_items.*')
+            ->join('products', 'stock_items.product_id', '=', 'products.id');
+
+        // Logic การกรอง (Filter)
+        if ($request->filled('search')) {
+            $query->where('products.name', 'like', '%' . $search . '%');
+        }
+        if ($request->filled('status')) {
+            $query->where('stock_items.status', $status);
+        }
+
+        // Logic การเรียงลำดับ (Sorting)
+        if ($sort == 'product_name') {
+            $query->orderBy('products.name', $direction);
+        } else {
+            $query->orderBy('stock_items.' . $sort, $direction);
+        }
+
+        if ($sort == 'product_name') {
+            $query->orderBy('products.name', $direction);
+        } elseif (in_array($sort, ['serial_no', 'ring_size'])) {
+
+        // เพิ่มให้รองรับการ Sort สองคอลัมน์ใหม่
+            $query->orderBy('stock_items.' . $sort, $direction);
+        } else {
+            $query->orderBy('stock_items.' . $sort, $direction);
+        }
+
+        // ดึงราคาทองล่าสุดมาแสดงผล
+        $currentGoldPrice = GoldPrice::orderBy('effective_date', 'desc')->first()->price_per_gram ?? 0;
+
+        // ดึงข้อมูลพร้อมรักษาค่า Query String ใน Link หน้าถัดไป
+        $stockItems = $query->with(['product', 'invoiceItem'])->paginate(20)->withQueryString();
+
+        return view('admin.stock-items.index', compact('stockItems', 'sort', 'direction', 'currentGoldPrice'));
+    }
+
+    public function edit(StockItem $stockItem)
+    {
+        $products = Product::where('is_active', true)->get();
+        return view('admin.stock-items.edit', compact('stockItem', 'products'));
+    }
+
+    public function update(StockItemRequest $request, StockItem $stockItem)
+    {
+        $stockItem->update($request->validated());
+        return redirect()->route('admin.stock-items.index')->with('success', 'Stock item updated');
+    }
+
+    public function destroy(StockItem $stockItem)
+    {
+        $stockItem->delete();
+        return redirect()->route('admin.stock-items.index')->with('success', 'Stock item deleted');
+    }
+
+    public function create()
+    {
+        $products = Product::where('is_active', true)->get();
+        return view('admin.stock-items.create', compact('products'));
+    }
+
+    public function store(StockItemRequest $request)
+    {
+        StockItem::create([
+            'product_id' => $request->product_id,
+            'serial_no' => $request->serial_no,
+            'ring_size' => $request->ring_size,
+            'gold_weight_actual' => $request->gold_weight_actual,
+            'gold_price_at_make' => $request->gold_price_at_make,
+            'diamond_detail' => $request->diamond_detail,
+            'total_cost' => $request->total_cost,
+            'status' => StockItem::STATUS_IN_STOCK,
+        ]);
+
+        return redirect()
+            ->route('admin.stock-items.index')
+            ->with('success', 'Stock item created successfully');
+    }
+}
 </file>
 
-<file path="resources/views/admin/dashboard.blade.php">
+<file path="resources/views/admin/customers/index.blade.php">
 @extends('admin.layout')
 
 @section('content')
-<h1>Admin Dashboard</h1>
-
-{{-- KPI CARDS --}}
-<div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:30px;">
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>💰 Sales Today</strong><br>
-        {{ number_format($salesToday,2) }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>💵 Profit Today</strong><br>
-        {{ number_format($profitToday,2) }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>📅 Sales This Month</strong><br>
-        {{ number_format($salesThisMonth,2) }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>💵 Profit This Month</strong><br>
-        {{ number_format($profitThisMonth,2) }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>🧾 Total Invoices</strong><br>
-        {{ $totalInvoices }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>💎 Total Profit</strong><br>
-        {{ number_format($totalProfit,2) }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>📊 Gross Margin (This Month)</strong><br>
-        {{ number_format($grossMargin,2) }} %
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>📦 Items Sold</strong><br>
-        {{ $totalItemsSold }}
-    </div>
-
-    <div style="padding:15px; border:1px solid #ddd; width:200px;">
-        <strong>💳 Outstanding Installments</strong><br>
-        {{ number_format($totalOutstanding,2) }}
-    </div>
-
-</div>
-
-{{-- TOP PRODUCTS --}}
-<h3>🔥 Top 5 Products</h3>
-
-<table>
-    <tr>
-        <th>Product</th>
-        <th>Sold</th>
-    </tr>
-@foreach($topProducts as $item)
-    <tr>
-        <td>{{ $item->product->name ?? '-' }}</td>
-        <td>{{ $item->total }}</td>
-    </tr>
-@endforeach
-</table>
-
-<h3>🔥 Top 5 Profit Products</h3>
-
-<table>
-    <tr>
-        <th>Product</th>
-        <th>Profit</th>
-    </tr>
-
-@foreach($topProfitProducts as $item)
-<tr>
-    <td>{{ $item['product']->name ?? '-' }}</td>
-    <td>{{ number_format($item['profit'],2) }}</td>
-</tr>
-@endforeach
-</table>
-
-<h3>📈 Monthly Profit ({{ now()->year }})</h3>
-
-<table>
-    <tr>
-        <th>Month</th>
-        <th>Sales</th>
-        <th>Profit</th>
-    </tr>
-
-@foreach(range(1,12) as $month)
-<tr>
-    <td>{{ $month }}</td>
-    <td>{{ number_format($monthlySales[$month],2) }}</td>
-    <td>{{ number_format($monthlyProfit[$month],2) }}</td>
-</tr>
-@endforeach
-</table>
-
-<br>
-
-{{-- LATEST INVOICES --}}
-<h3>🆕 Latest Invoices</h3>
-
-<table>
-    <tr>
-        <th>#</th>
-        <th>Customer</th>
-        <th>Total</th>
-        <th>Payment</th>
-        <th>Status</th>
-        <th></th>
-    </tr>
-
-@foreach($latestInvoices as $invoice)
-<tr>
-    <td>#{{ $invoice->id }}</td>
-    <td>{{ $invoice->customer_name ?? '-' }}</td>
-    <td>{{ number_format($invoice->total_amount,2) }}</td>
-    <td>{{ $invoice->payment_type }}</td>
-    <td>{{ $invoice->status }}</td>
-    <td>
-        <a href="{{ route('admin.invoices.show', $invoice) }}">
-            ดู
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h1 style="margin: 0; color: #333;">👤 Customer Directory</h1>
+        <a href="{{ route('admin.customers.create') }}" style="background: linear-gradient(135deg, #C8A951 0%, #B09440 100%); color: white; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 15px rgba(200, 169, 81, 0.3); display: flex; align-items: center; gap: 8px;">
+            <span>➕</span> Add New Customer
         </a>
-    </td>
-</tr>
-@endforeach
-</table>
+    </div>
 
+    {{-- TABLE WRAPPER --}}
+    <div style="background: white; border-radius: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #333; color: #B09440;">
+                    <th style="padding: 18px 20px;">Customer Name</th>
+                    <th style="padding: 18px 20px;">Contact Info</th>
+                    <th style="padding: 18px 20px;">Address</th>
+                    <th style="padding: 18px 20px; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($customers as $customer)
+                <tr style="border-bottom: 1px solid #f0f0f0; transition: background 0.3s;" onmouseover="this.style.backgroundColor='#fffcf5'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 18px 20px;">
+                        <div style="font-weight: bold; color: #333; font-size: 16px;">{{ $customer->name }}</div>
+                        <small style="color: #999;">ID: #CUST-{{ str_pad($customer->id, 4, '0', STR_PAD_LEFT) }}</small>
+                    </td>
+                    <td style="padding: 18px 20px;">
+                        <div style="margin-bottom: 4px;">📞 <span style="color: #555;">{{ $customer->phone ?? '-' }}</span></div>
+                        <div>📧 <span style="color: #888; font-size: 13px;">{{ $customer->email ?? '-' }}</span></div>
+                    </td>
+                    <td style="padding: 18px 20px; max-width: 300px;">
+                        <div style="color: #666; font-size: 14px; line-height: 1.4;">
+                            {{ $customer->address ?? 'No address provided' }}
+                        </div>
+                    </td>
+                    <td style="padding: 18px 20px; text-align: center;">
+                        <div style="display: flex; justify-content: center; gap: 10px;">
+                            <a href="{{ route('admin.customers.show', $customer) }}" style="text-decoration: none; color: #C8A951; font-weight: bold; border: 1.5px solid #C8A951; padding: 7px 15px; border-radius: 6px; font-size: 13px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#C8A951'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#C8A951';">
+                                🔍 View Profile
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+
+                @if($customers->isEmpty())
+                <tr>
+                    <td colspan="4" style="padding: 50px; text-align: center; color: #999;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">📋</div>
+                        No customers found. Click "Add New Customer" to start.
+                    </td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 25px;">
+        {{ $customers->links('pagination::simple-bootstrap-4') }}
+    </div>
+</div>
 @endsection
 </file>
 
-<file path="resources/views/admin/invoices/show.blade.php">
+<file path="resources/views/admin/installments/index.blade.php">
 @extends('admin.layout')
 
 @section('content')
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h1 style="margin: 0;">📑 บิลผ่อนค้าง (Installments)</h1>
+    </div>
 
-<h1>Invoice #{{ $invoice->id }}</h1>
-<a
-    href="{{ route('admin.invoices.print', $invoice) }}"
-    target="_blank"
-    style="
-        display:inline-block;
-        margin-bottom:15px;
-        padding:6px 12px;
-        background:#000;
-        color:#fff;
-        text-decoration:none;
-    "
->
-    🧾 ใบเสร็จ / Print
-</a>
+    @if(session('success'))
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
+            ✅ {{ session('success') }}
+        </div>
+    @endif
 
-<p>
-    Customer: {{ $invoice->customer_name }} <br>
-    Total: {{ number_format($invoice->total_amount, 2) }} <br>
-    Payment Type: {{ $invoice->payment_type }}
-</p>
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                    <th style="padding: 15px; color: #333;">Invoice</th>
+                    <th style="padding: 15px; color: #333;">งวดที่</th>
+                    <th style="padding: 15px; color: #333; text-align: right;">ยอดชำระ</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">กำหนดชำระ</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">สถานะ</th>
+                    <th style="padding: 15px; color: #333; text-align: center;">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($installments as $item)
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fdfbf5'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 15px;">
+                        <strong style="color: #C8A951;">#{{ $item->installmentPlan->invoice_id }}</strong>
+                    </td>
+                    <td style="padding: 15px;">งวดที่ {{ $item->month_no }}</td>
+                    <td style="padding: 15px; text-align: right; font-weight: bold;">
+                        {{ number_format($item->amount, 2) }}
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <span style="color: {{ \Carbon\Carbon::parse($item->due_date)->isPast() && $item->status !== 'PAID' ? '#dc3545' : '#333' }}; font-weight: {{ \Carbon\Carbon::parse($item->due_date)->isPast() ? 'bold' : 'normal' }}">
+                            {{ \Carbon\Carbon::parse($item->due_date)->format('d/m/Y') }}
+                        </span>
+                        @if(\Carbon\Carbon::parse($item->due_date)->isPast() && $item->status !== 'PAID')
+                            <br><small style="color: #dc3545; font-size: 10px;">(เกินกำหนด)</small>
+                        @endif
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        @php
+                            $statusBg = '#fff3cd'; $statusColor = '#856404';
+                            if($item->status === 'PAID') { $statusBg = '#d4edda'; $statusColor = '#155724'; }
+                            elseif($item->status === 'OVERDUE') { $statusBg = '#f8d7da'; $statusColor = '#721c24'; }
+                        @endphp
+                        <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; background: {{ $statusBg }}; color: {{ $statusColor }};">
+                            {{ $item->status }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        @if($item->status !== 'PAID')
+                            <a href="{{ route('admin.installments.receive', $item) }}"
+                               style="background: #28a745; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; display: inline-block;">
+                               💰 รับเงิน
+                            </a>
+                        @else
+                            <span style="color: #6c757d; font-size: 13px;">✅ ชำระแล้ว</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
 
-@if($invoice->payment_type === 'INSTALLMENT' && $invoice->installmentPlan)
+                @if($installments->isEmpty())
+                <tr>
+                    <td colspan="6" style="padding: 30px; text-align: center; color: #999;">ไม่พบรายการบิลผ่อนค้าง</td>
+                </tr>
+                @endif
+            </tbody>
+        </table>
+    </div>
+</div>
+@endsection
+</file>
 
-    <h3>Installment Schedule</h3>
+<file path="resources/views/admin/installments/receive.blade.php">
+@extends('admin.layout')
 
-<table>
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Due Date</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach($invoice->installmentPlan->schedules as $schedule)
-        <tr>
-            <td>{{ $schedule->month_no }}</td>
-            <td>{{ $schedule->due_date }}</td>
-            <td>{{ number_format($schedule->amount, 2) }}</td>
-            <td>{{ $schedule->status }}</td>
-           <td>
-            @if($schedule->status === 'UNPAID')
-                <a
-                href="{{ route('admin.installments.receive', $schedule) }}"
-                class="btn btn-sm btn-primary"
-                >
-                รับเงินงวด
-                </a>
-            @else
-            <span class="text-success">ชำระแล้ว</span>
-            @endif
-            </td>
+@section('content')
+<div style="padding: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h1 style="margin: 0;">💰 รับเงินงวด (Receive Payment)</h1>
+        <a href="{{ route('admin.installments.index') }}" style="text-decoration: none; color: #666;">⬅️ กลับหน้าบิลผ่อน</a>
+    </div>
 
-        </tr>
-    @endforeach
-    </tbody>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; align-items: start;">
+
+        {{-- ฝั่งซ้าย: ข้อมูลงวดที่กำลังจะรับเงิน --}}
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-top: 5px solid #C8A951;">
+            <h3 style="margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">📋 ข้อมูลการผ่อน</h3>
+
+            <div style="margin-bottom: 15px;">
+                <small style="color: gray; display: block;">เลขที่ใบแจ้งหนี้ / ลูกค้า</small>
+                <strong style="font-size: 18px;">#{{ $schedule->installmentPlan->invoice->id }}</strong>
+                <span style="margin: 0 10px; color: #ccc;">|</span>
+                <strong style="font-size: 18px; color: #C8A951;">{{ $schedule->installmentPlan->invoice->customer->name ?? '-' }}</strong>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="border-bottom: 1px solid #f9f9f9;">
+                    <td style="padding: 10px 0; color: #666;">งวดที่:</td>
+                    <td style="padding: 10px 0; text-align: right; font-weight: bold;">งวดที่ {{ $schedule->month_no }}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f9f9f9;">
+                    <td style="padding: 10px 0; color: #666;">วันครบกำหนด:</td>
+                    <td style="padding: 10px 0; text-align: right; color: {{ \Carbon\Carbon::parse($schedule->due_date)->isPast() ? '#dc3545' : '#333' }}; font-weight: bold;">
+                        {{ \Carbon\Carbon::parse($schedule->due_date)->format('d/m/Y') }}
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f9f9f9;">
+                    <td style="padding: 10px 0; color: #666;">สถานะปัจจุบัน:</td>
+                    <td style="padding: 10px 0; text-align: right;">
+                        <span style="padding: 3px 10px; border-radius: 10px; background: #fff3cd; color: #856404; font-size: 12px; font-weight: bold;">
+                            {{ $schedule->status }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 15px 0; color: #333; font-weight: bold; font-size: 18px;">ยอดที่ต้องชำระ:</td>
+                    <td style="padding: 15px 0; text-align: right; color: #28a745; font-weight: bold; font-size: 22px;">
+                        {{ number_format($schedule->amount, 2) }} <small style="font-size: 14px;">บาท</small>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        {{-- ฝั่งขวา: ฟอร์มยืนยันการรับเงิน --}}
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">✍️ บันทึกการรับเงิน</h3>
+
+            <form method="POST" action="{{ route('admin.installments.receive.store', $schedule) }}">
+                @csrf
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">จำนวนเงินที่รับจริง *</label>
+                    <input type="number" step="0.01" name="amount" value="{{ old('amount', $schedule->amount) }}"
+                           style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 18px; font-weight: bold; color: #28a745;" required>
+                    @error('amount')
+                        <div style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">วันที่รับเงิน</label>
+                    <input type="date" name="paid_at" value="{{ old('paid_at', now()->toDateString()) }}"
+                           style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">บันทึกเพิ่มเติม (Note)</label>
+                    <textarea name="note" rows="3" placeholder="เช่น โอนเข้ากสิกร / จ่ายเงินสด..."
+                              style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: sans-serif;">{{ old('note') }}</textarea>
+                </div>
+
+                <button type="submit" style="width: 100%; background: #28a745; color: white; border: none; padding: 15px; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer;"
+                        onclick="return confirm('ยืนยันการรับเงินจำนวน {{ number_format($schedule->amount, 2) }} บาท ใช่หรือไม่?')">
+                    ✅ ยืนยันการรับเงิน
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+@endsection
+</file>
+
+<file path="resources/views/admin/invoices/receipt.blade.php">
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ใบเสร็จรับเงิน #{{ $invoice->id }}</title>
+
+<style>
+
+body {
+    font-family: thsarabun;
+    font-size: 16px;
+    color: #1a1a1a;
+    position: relative;
+}
+
+.wrapper {
+    width: 180mm;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1; /* ให้เนื้อหาอยู่เหนือ watermark */
+}
+
+
+/* ===== HEADER ===== */
+.header-table {
+    width: 100%;
+}
+
+.brand-name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1f3c88;
+    letter-spacing: 1px;
+}
+
+.document-title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.logo {
+    width: 110px;
+}
+
+/* ===== TABLE ===== */
+.table,
+.installment-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table th, .table td,
+.installment-table th, .installment-table td {
+    border: 1px solid #C8A951;
+    padding: 6px;
+}
+
+.table th,
+.installment-table th {
+    background-color: #f8f4e8;
+    font-weight: bold;
+}
+
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+
+.summary {
+    width: 100%;
+    margin-top: 12px;
+}
+
+.summary td {
+    padding: 5px;
+}
+
+.signature-section {
+    margin-top: 40px;
+}
+
+.signature-box {
+    width: 45%;
+    display: inline-block;
+    text-align: center;
+}
+
+.signature-line {
+    margin-top: 55px;
+    border-top: 1px solid #C8A951;
+}
+
+.footer {
+    margin-top: 35px;
+    font-size: 14px;
+}
+
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+
+{{-- HEADER --}}
+<table class="header-table">
+<tr>
+<td width="70%">
+    <div class="brand-name">HAYATI DIAMOND</div>
+    <div class="document-title">ใบเสร็จรับเงิน</div>
+
+    <div style="margin-top: 10px;">
+        <strong>เลขที่เอกสาร:</strong> INV-{{ $invoice->id }}<br>
+        <strong>วันที่:</strong> {{ $invoice->created_at->format('d/m/Y') }}<br>
+        <strong>ลูกค้า:</strong> {{ $invoice->customer->name ?? $invoice->customer_name }}<br>
+
+        {{-- ถ้ามี Relation กับ Customer ให้ดึงที่อยู่มาโชว์ --}}
+        @if($invoice->customer)
+            <strong>ที่อยู่:</strong> {{ $invoice->customer->address }}<br>
+            <strong>เบอร์โทร:</strong> {{ $invoice->customer->phone }}
+        @endif
+    </div>
+</td>
+
+<td width="30%" align="right">
+@if(file_exists(public_path('images/logo.png')))
+    <img src="file://{{ public_path('images/logo.png') }}" class="logo">
+@endif
+</td>
+</tr>
 </table>
 
-@else
-    <p>No installment plan.</p>
+{{-- ITEMS --}}
+<table class="table">
+<tr>
+    <th width="5%">#</th>
+    <th width="45%">รายละเอียดสินค้า</th>
+    <th width="15%">ราคาต่อหน่วย</th>
+    <th width="10%">จำนวน</th>
+    <th width="15%">ยอดรวม</th>
+</tr>
+
+@foreach($invoice->items as $index => $item)
+<tr>
+<td class="text-center">{{ $index + 1 }}</td>
+<td>
+    @php
+        $imagePath = public_path('images/products/' . $item->product->image_url);
+    @endphp
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            {{-- รูปสินค้า --}}
+            <td width="70" valign="top">
+                @if(!empty($item->product->image_url) && file_exists($imagePath))
+                    <img src="{{ $imagePath }}" width="60" style="border:1px solid #eee; padding:3px;">
+                @endif
+            </td>
+
+            {{-- รายละเอียด --}}
+            <td valign="top" style="padding-left:8px;">
+
+                <div style="font-weight:bold; font-size:15px;">
+                    {{ $item->product->name ?? '-' }}
+                </div>
+
+                @if(!empty($item->stockItem->gold_weight_actual))
+                    <div style="font-size:13px;">
+                        Gold Weight: {{ $item->stockItem->gold_weight_actual }} g
+                    </div>
+                @endif
+
+                @if(!empty($item->stockItem->diamond_detail))
+                    <div style="font-size:13px;">
+                        Diamond: {{ $item->stockItem->diamond_detail }}
+                    </div>
+                @endif
+
+            </td>
+        </tr>
+    </table>
+</td>
+
+<td class="text-right">{{ number_format($item->price_at_sale,2) }}</td>
+<td class="text-center">{{ $item->quantity }}</td>
+<td class="text-right">
+    {{ number_format($item->price_at_sale * $item->quantity,2) }}
+</td>
+</tr>
+@endforeach
+</table>
+
+{{-- SUMMARY --}}
+<table class="summary">
+<tr>
+<td width="80%" align="right">จำนวนเงินรวมทั้งสิ้น</td>
+<td width="20%" align="right">{{ number_format($invoice->total_amount,2) }}</td>
+</tr>
+<tr>
+<td align="right">ชำระแล้ว</td>
+<td align="right">{{ number_format($invoice->paid_total,2) }}</td>
+</tr>
+<tr>
+<td align="right"><strong>ยอดคงเหลือ</strong></td>
+<td align="right"><strong>{{ number_format($invoice->outstanding_balance,2) }}</strong></td>
+</tr>
+</table>
+
+{{-- INSTALLMENT --}}
+@if($invoice->payment_type === 'INSTALLMENT' && $invoice->installmentPlan)
+<h3 style="margin-top:18px;">ตารางผ่อนชำระ</h3>
+
+<table class="installment-table">
+<tr>
+    <th>งวดที่</th>
+    <th>กำหนดชำระ</th>
+    <th>จำนวนเงิน</th>
+    <th>สถานะ</th>
+    <th>วันที่รับเงิน</th>
+</tr>
+
+@foreach($invoice->installmentPlan->schedules as $s)
+<tr>
+    <td class="text-center">{{ $s->month_no }}</td>
+    <td class="text-center">{{ \Carbon\Carbon::parse($s->due_date)->format('d/m/Y') }}</td>
+    <td class="text-right">{{ number_format($s->amount,2) }}</td>
+    <td class="text-center">
+        @if($s->status === 'PAID')
+            <span style="color:green;">ชำระแล้ว</span>
+        @else
+            <span style="color:#C8A951;">ค้างชำระ</span>
+        @endif
+    </td>
+    <td class="text-center">
+        {{ $s->paid_at ? \Carbon\Carbon::parse($s->paid_at)->format('d/m/Y') : '-' }}
+    </td>
+</tr>
+@endforeach
+
+</table>
 @endif
 
+{{-- SIGN --}}
+<div class="signature-section">
+<table width="100%" style="margin-top:70px;">
+    <tr>
+        {{-- ผู้จ่ายเงิน --}}
+        <td width="50%" align="center" valign="bottom">
+            <div style="height:90px;"></div>
+            <div style="border-top:1px solid #C8A951; width:70%; margin:0 auto;"></div>
+            ___________________________<br>
+            <div style="margin-top:5px;">ผู้จ่ายเงิน</div>
+        </td>
+
+        {{-- ผู้รับเงิน --}}
+        <td width="50%" align="center" valign="bottom">
+
+            @php
+                $signaturePath = public_path('images/signature.png');
+            @endphp
+
+            <div style="height:90px;">
+                @if(file_exists($signaturePath))
+                    <img src="file://{{ $signaturePath }}"
+                         style="max-height:70px; display:block; margin:0 auto;">
+                @endif
+            </div>
+            ___________________________<br>
+            <div style="border-top:1px solid #C8A951; width:70%; margin:0 auto;"></div>
+            <div style="margin-top:5px;">ผู้รับเงิน</div>
+
+        </td>
+    </tr>
+</table>
+</div>
+
+
+<div class="footer">
+
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+
+    {{-- ซ้าย: ข้อมูลร้าน --}}
+    <td width="60%" valign="top">
+        <strong>Hayati Diamond</strong><br>
+        ที่อยู่ 11/29 หมู่ 3 ต.บ้านกลาง อ.อ่าวลึก จ.กระบี่ 81110<br>
+        โทร: 093-735-0033
+    </td>
+
+    {{-- ขวา: ลายเซ็น + QR --}}
+    <td width="40%" align="right" valign="top">
+
+        {{-- QR LINE --}}
+        @php
+            $qrPath = public_path('images/qr-line.png');
+        @endphp
+
+        @if(file_exists($qrPath))
+            <img src="file://{{ $qrPath }}" width="90"><br>
+            <span style="font-size:12px;">Add LINE Official</span>
+        @endif
+
+    </td>
+
+</tr>
+</table>
+
+</div>
+
+
+</div>
+</body>
+</html>
+</file>
+
+<file path="resources/views/admin/products/index.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    {{-- Header Section --}}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <h2 style="margin: 0;">📦 Products (ต้นแบบสินค้า)</h2>
+        <a href="{{ route('admin.products.create') }}"
+           style="background: #C8A951; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(200, 169, 81, 0.2);">
+            ➕ New Product
+        </a>
+    </div>
+
+    {{-- Table Section --}}
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                    {{-- Sortable Columns --}}
+                    @php
+                        $sortLink = function($field, $label) use ($sort, $direction) {
+                            $dir = ($sort == $field && $direction == 'asc') ? 'desc' : 'asc';
+                            $icon = ($sort == $field) ? ($direction == 'asc' ? '▲' : '▼') : '↕';
+                            $url = request()->fullUrlWithQuery(['sort' => $field, 'direction' => $dir]);
+                            return "<a href='{$url}' style='text-decoration:none; color:#333; display:flex; align-items:center; gap:5px;'>{$label} <span style='font-size:10px; color:#C8A951;'>{$icon}</span></a>";
+                        };
+                    @endphp
+
+                    <th style="padding: 15px; width: 80px;">{!! $sortLink('id', 'ID') !!}</th>
+                    <th style="padding: 15px; width: 80px;">Image</th>
+                    <th style="padding: 15px;">{!! $sortLink('name', 'Product Name') !!}</th>
+                    <th style="padding: 15px;">{!! $sortLink('category', 'Category') !!}</th>
+                    <th style="padding: 15px; text-align: center;">{!! $sortLink('is_active', 'Active') !!}</th>
+                    <th style="padding: 15px; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($products as $product)
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fdfbf5'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 15px; color: #888;">#{{ $product->id }}</td>
+                    <td style="padding: 10px;">
+                        @if($product->image_url)
+                            <img src="{{ asset('images/products/' . $product->image_url) }}"
+                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;">
+                        @else
+                            <div style="width: 60px; height: 60px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px;">No Pic</div>
+                        @endif
+                    </td>
+                    <td style="padding: 15px;">
+                        <strong style="color: #333;">{{ $product->name }}</strong>
+                    </td>
+                    <td style="padding: 15px;">
+                        <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-size: 13px; color: #666;">
+                            {{ $product->category }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        @if($product->is_active)
+                            <span style="color: #28a745; background: #e9f7ef; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">Yes</span>
+                        @else
+                            <span style="color: #dc3545; background: #fdf2f2; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">No</span>
+                        @endif
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            <a href="{{ route('admin.products.edit', $product) }}"
+                               style="text-decoration: none; color: #007bff; border: 1px solid #007bff; padding: 5px 10px; border-radius: 4px; font-size: 13px;">
+                               ✏️ Edit
+                            </a>
+                            <form action="{{ route('admin.products.destroy', $product) }}" method="POST" style="display:inline">
+                                @csrf @method('DELETE')
+                                <button onclick="return confirm('ยืนยันการลบสินค้าต้นแบบนี้?')"
+                                        style="background: #fff; border: 1px solid #dc3545; color: #dc3545; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                                    🗑 ลบ
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px;">
+        {{ $products->links('pagination::simple-bootstrap-4') }}
+    </div>
+</div>
+@endsection
+</file>
+
+<file path="resources/views/admin/stock-items/create.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    <h1>➕ Create New Stock Item</h1>
+
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px;">
+        <form method="POST" action="{{ route('admin.stock-items.store') }}">
+            @csrf
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold;">Product Model *</label><br>
+                <select name="product_id" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" required>
+                    <option value="">-- Select Product --</option>
+                    @foreach($products as $product)
+                        <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
+                            {{ $product->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold;">Serial Number:</label>
+                <input type="text" name="serial_no" value="{{ old('serial_no') }}" placeholder="เช่น 10101..." style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="font-weight: bold;">Ring Size:</label>
+                    <input type="text" name="ring_size" value="{{ old('ring_size') }}" placeholder="48, 50..." style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: bold;">Gold Weight (g):</label>
+                    <input type="number" step="0.001" name="gold_weight_actual" value="{{ old('gold_weight_actual') }}" placeholder="0.000" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" required>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="font-weight: bold;">Gold Price @Make:</label>
+                    <input type="number" step="0.01" name="gold_price_at_make" value="{{ old('gold_price_at_make') }}" placeholder="ราคาทองตอนสั่งผลิต" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" required>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: bold;">Total Cost:</label>
+                    <input type="number" step="0.01" name="total_cost" value="{{ old('total_cost') }}" placeholder="ต้นทุนรวมทั้งหมด" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;" required>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold;">Diamond Detail:</label>
+                <textarea name="diamond_detail" rows="3" placeholder="ระบุรายละเอียดเพชร เช่น GIA..." style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">{{ old('diamond_detail') }}</textarea>
+            </div>
+
+            <div style="margin-top: 25px; display: flex; gap: 10px; align-items: center;">
+                <button type="submit" style="background: #C8A951; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px;">
+                    💾 Save New Stock Item
+                </button>
+                <a href="{{ route('admin.stock-items.index') }}" style="text-decoration: none; color: #666; font-size: 14px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+</file>
+
+<file path="resources/views/admin/stock-items/index.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    {{-- Header Section --}}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">💎 Stock Inventory (คลังสินค้าจริง)</h2>
+        <a href="{{ route('admin.stock-items.create') }}"
+           style="background: #333; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            ➕ New Stock Item
+        </a>
+    </div>
+
+    {{-- Filter Bar --}}
+    <div style="margin-bottom: 25px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #eee;">
+        <form action="{{ route('admin.stock-items.index') }}" method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="ค้นหาชื่อสินค้า / Serial No..."
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+
+            <select name="status" style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; min-width: 150px;">
+                <option value="">-- สถานะทั้งหมด --</option>
+                <option value="IN_STOCK" {{ request('status') == 'IN_STOCK' ? 'selected' : '' }}>🟢 In Stock</option>
+                <option value="SOLD" {{ request('status') == 'SOLD' ? 'selected' : '' }}>🔴 Sold</option>
+            </select>
+
+            <button type="submit" style="background: #C8A951; color: white; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                🔍 Filter
+            </button>
+            <a href="{{ route('admin.stock-items.index') }}" style="text-decoration: none; color: #666; font-size: 13px;">ล้างค่า</a>
+        </form>
+    </div>
+
+    {{-- Table Section --}}
+    <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+                @php
+                    $sortLink = function($field, $label) use ($sort, $direction) {
+                        $dir = ($sort == $field && $direction == 'asc') ? 'desc' : 'asc';
+                        $icon = ($sort == $field) ? ($direction == 'asc' ? '▲' : '▼') : '↕';
+                        $url = request()->fullUrlWithQuery(['sort' => $field, 'direction' => $dir]);
+                        return "<a href='{$url}' style='text-decoration:none; color:#333; display:flex; align-items:center; gap:3px;'>{$label} <span style='font-size:10px; color:#C8A951;'>{$icon}</span></a>";
+                    };
+                @endphp
+                <tr style="background-color: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                    <th style="padding: 15px; width: 50px;">{!! $sortLink('id', 'ID') !!}</th>
+                    <th style="padding: 15px;">Product / Pic</th>
+                    <th style="padding: 15px;">{!! $sortLink('serial_no', 'Serial') !!}</th>
+                    <th style="padding: 15px; text-align: center;">{!! $sortLink('ring_size', 'Size') !!}</th>
+                    <th style="padding: 15px; text-align: right;">{!! $sortLink('gold_weight_actual', 'Gold(g)') !!}</th>
+                    <th style="padding: 15px; background: #fffcf0; text-align: right;">Gold@Make</th>
+                    <th style="padding: 15px; background: #fffcf0; text-align: right; color: #C8A951;">Gold Today</th>
+                    <th style="padding: 15px; text-align: right;">Total Cost</th>
+                    <th style="padding: 15px; text-align: right;">Δ Gold</th>
+                    <th style="padding: 15px; text-align: center;">{!! $sortLink('status', 'Status') !!}</th>
+                    <th style="padding: 15px; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($stockItems as $item)
+                <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#fdfbf5'" onmouseout="this.style.backgroundColor='transparent'">
+                    <td style="padding: 12px; text-align: center; color: #999;">{{ $item->id }}</td>
+                    <td style="padding: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            @if($item->product && $item->product->image_url)
+                                <img src="{{ asset('images/products/' . $item->product->image_url) }}" width="40" height="40" style="border-radius: 6px; object-fit: cover; border: 1px solid #eee;">
+                            @endif
+                            <div>
+                                <strong style="display: block; color: #333;">{{ $item->product->name }}</strong>
+                                <small style="color: #888;">{{ Str::limit($item->diamond_detail, 25) }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 12px;"><code>{{ $item->serial_no ?? '-' }}</code></td>
+                    <td style="padding: 12px; text-align: center;">{{ $item->ring_size ?? '-' }}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold;">{{ number_format($item->gold_weight_actual, 2) }}</td>
+
+                    <td style="padding: 12px; text-align: right; background: #fffcf0; color: #777;">{{ number_format($item->gold_price_at_make, 0) }}</td>
+                    <td style="padding: 12px; text-align: right; background: #fffcf0; font-weight: bold; color: #C8A951;">{{ number_format($currentGoldPrice, 0) }}</td>
+
+                    <td style="padding: 12px; text-align: right; font-weight: bold;">{{ number_format($item->total_cost, 2) }}</td>
+                    <td style="padding: 12px; text-align: right;">
+                        <span style="color: {{ $item->gold_difference >= 0 ? '#28a745' : '#dc3545' }}; font-weight: bold;">
+                            {{ $item->gold_difference >= 0 ? '+' : '' }}{{ number_format($item->gold_difference, 2) }}
+                        </span>
+                    </td>
+
+                    <td style="padding: 12px; text-align: center;">
+                        <span style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; background: {{ $item->status == 'IN_STOCK' ? '#e9f7ef' : '#fdf2f2' }}; color: {{ $item->status == 'IN_STOCK' ? '#1e8449' : '#a94442' }};">
+                            {{ $item->status }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <a href="{{ route('admin.stock-items.edit', $item->id) }}" style="text-decoration: none; font-size: 16px;">✏️</a>
+                            <form action="{{ route('admin.stock-items.destroy', $item->id) }}" method="POST" style="display:inline">
+                                @csrf @method('DELETE')
+                                <button onclick="return confirm('ลบรายการนี้ใช่หรือไม่?')" style="border: none; background: none; cursor: pointer; font-size: 16px;">🗑️</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px;">
+        {{ $stockItems->links('pagination::simple-bootstrap-4') }}
+    </div>
+</div>
 @endsection
 </file>
 
@@ -21368,92 +21533,6 @@ class AdminInstallmentController extends Controller
         return redirect()
             ->route('admin.installments.index')
             ->with('success', 'รับเงินงวดเรียบร้อยแล้ว');
-    }
-}
-</file>
-
-<file path="app/Http/Controllers/Admin/InvoiceController.php">
-<?php
-
-namespace App\Http\Controllers\Admin;
-
-use App\Http\Controllers\Controller;
-use App\Models\Invoice;
-use Mpdf\Mpdf;
-
-class InvoiceController extends Controller
-{
-    public function index()
-    {
-    $invoices = \App\Models\Invoice::latest()->paginate(20);
-
-    return view('admin.invoices.index', compact('invoices'));
-    }
-
-
-
-    public function show(Invoice $invoice)
-    {
-        $invoice->load([
-            'items.stockItem.product',
-            'installmentPlan.schedules',
-        ]);
-
-        return view('admin.invoices.show', compact('invoice'));
-    }
-
-    public function printPdf(Invoice $invoice)
-    {
-    $invoice->load([
-        'items.stockItem.product',
-        'installmentPlan.schedules',
-        'payments'
-    ]);
-
-    $html = view('admin.invoices.receipt', compact('invoice'))->render();
-
-    $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
-    $fontDirs = $defaultConfig['fontDir'];
-
-    $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
-    $fontData = $defaultFontConfig['fontdata'];
-
-    $mpdf = new Mpdf([
-        'mode' => 'utf-8',
-        'format' => 'A4',
-        'tempDir' => storage_path('app/mpdf'),
-
-        'fontDir' => array_merge($fontDirs, [
-            public_path('fonts'),
-        ]),
-
-        'fontdata' => $fontData + [
-            'thsarabun' => [
-                'R' => 'THSarabunNew.ttf',
-            ],
-        ],
-
-        'default_font' => 'thsarabun'
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | ✅ เพิ่มส่วนนี้
-    |--------------------------------------------------------------------------
-    */
-
-    $mpdf->SetWatermarkImage(public_path('images/logo.png'), 0.08);
-    $mpdf->showWatermarkImage = true;
-
-    /*
-    |--------------------------------------------------------------------------
-    */
-
-    $mpdf->WriteHTML($html);
-
-    return response(
-        $mpdf->Output("invoice-{$invoice->id}.pdf", 'I')
-    )->header('Content-Type', 'application/pdf');
     }
 }
 </file>
@@ -21757,221 +21836,252 @@ class StockItemFactory extends Factory
 }
 </file>
 
-<file path="resources/views/admin/layout.blade.php">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin</title>
-    <style>
-        body { font-family: sans-serif; margin: 40px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f4f4f4; }
-        a { margin-right: 8px; }
-    </style>
-</head>
-<body>
-<div style="display:flex">
-
-    <aside style="width:200px; padding:10px; background:#f5f5f5">
-    <h3>Hayati Admin</h3>
-    <p style="font-size:14px; color:gray;">
-    👤 {{ auth()->user()->name }}
-    </p>
-
-
-    <ul class="space-y-2">
-
-    <li><a href="{{ route('admin.dashboard') }}">📊 Dashboard</a></li>
-    <li><a href="{{ route('admin.gold-price.create') }}">🪙 Update Gold Price(18K)</a></li>
-    <br>
-
-    <h4>Sales</h4>
-    <li><a href="{{ route('admin.sales.create') }}">➕ New Sale</a></li>
-    <li><a href="{{ route('admin.payments.index') }}">💰 Payments</a></li>
-    <li><a href="{{ route('admin.invoices.index') }}">📄 Invoices</a></li>
-    <li><a href="{{ route('admin.installments.index') }}">📑 Installments</a></li>
-    <br>
-
-    <h4>Inventory</h4>
-    <li><a href="{{ route('admin.products.index') }}">📦 Products</a></li>
-    <li><a href="{{ route('admin.stock-items.index') }}">🏷 Stock</a></li>
-    <br>
-
-    <h4>CRM</h4>
-    <li><a href="{{ route('admin.customers.index') }}">👤 Customers</a></li>
-
-    </ul>
-
-    <hr>
-    <form method="POST" action="{{ route('logout') }}">
-    @csrf
-    <button type="submit" style="margin-top:10px;">
-        🚪 Logout
-    </button>
-    </form>
-
-    </aside>
-
-    <main style="padding:20px; flex:1">
-        @yield('content')
-    </main>
-
-</div>
-</body>
-
-</html>
-</file>
-
-<file path="resources/views/admin/sales/create.blade.php">
+<file path="resources/views/admin/dashboard.blade.php">
 @extends('admin.layout')
 
 @section('content')
-<h1>New Sale</h1>
+<div style="padding: 20px;">
+    <h1 style="margin-bottom: 25px; color: #333;">📊 Admin Executive Dashboard</h1>
 
-@if ($errors->any())
-    <p style="color:red">{{ $errors->first() }}</p>
-@endif
+    {{-- ===== KPI CARDS SECTION ===== --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px;">
 
-<form method="POST" action="{{ route('admin.sales.store') }}">
-    @csrf
+        <div style="background: linear-gradient(135deg, #C8A951 0%, #E2C986 100%); padding: 20px; border-radius: 15px; color: white; box-shadow: 0 4px 15px rgba(200, 169, 81, 0.3);">
+            <small style="opacity: 0.9;">💰 Sales Today (ยอดวันนี้)</small>
+            <div style="font-size: 24px; font-weight: bold; margin-top: 5px;">{{ number_format($salesToday, 2) }}</div>
+            <div style="font-size: 12px; margin-top: 10px; background: rgba(255,255,255,0.2); display: inline-block; padding: 2px 8px; border-radius: 10px;">
+                Profit: {{ number_format($profitToday, 2) }}
+            </div>
+        </div>
 
-    {{-- Stock Item --}}
-    <label>Stock Item *</label><br>
+        <div style="background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #333;">
+            <small style="color: #888;">📅 Sales This Month</small>
+            <div style="font-size: 24px; font-weight: bold; color: #333; margin-top: 5px;">{{ number_format($salesThisMonth, 2) }}</div>
+            <div style="color: #28a745; font-size: 13px; font-weight: bold; margin-top: 5px;">
+                Margin: {{ number_format($grossMargin, 2) }} %
+            </div>
+        </div>
 
-    <table border="1" cellpadding="6">
-    <thead>
-        <tr>
-            <th>Select</th>
-            <th>Product</th>
-            <th>Cost</th>
-            <th>Market</th>
-            <th>Sale Price</th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach($stockItems as $item)
-        <tr>
-            <td>
-                <input type="checkbox"
-                       name="stock_item_ids[]"
-                       value="{{ $item->id }}">
-            </td>
-            <td>{{ $item->product->name }}</td>
-            <td>{{ number_format($item->total_cost, 2) }}</td>
-            <td>{{ number_format($item->market_reference, 2) }}</td>
-            <td>
-                <input type="number"
-                       step="0.01"
-                       name="sale_prices[{{ $item->id }}]">
-            </td>
-        </tr>
-    @endforeach
-    </tbody>
-    </table>
-    <br><br>
+        <div style="background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #28a745;">
+            <small style="color: #888;">💵 Profit This Month</small>
+            <div style="font-size: 24px; font-weight: bold; color: #28a745; margin-top: 5px;">{{ number_format($profitThisMonth, 2) }}</div>
+            <small style="color: #999;">Items Sold: {{ $totalItemsSold }} units</small>
+        </div>
 
-    {{-- Customer --}}
-    <fieldset>
-        <legend>Customer (optional)</legend>
+        <div style="background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #dc3545;">
+            <small style="color: #888;">💳 Outstanding (ค้างชำระ)</small>
+            <div style="font-size: 24px; font-weight: bold; color: #dc3545; margin-top: 5px;">{{ number_format($totalOutstanding, 2) }}</div>
+            <small style="color: #999;">From {{ $totalInvoices }} Invoices</small>
+        </div>
 
-        <label>Name</label><br>
-        <input type="text" name="customer_name" value="{{ old('customer_name') }}">
-        <br><br>
-    </fieldset>
-
-    {{-- Payment --}}
-    <label>Payment Type *</label><br>
-    <select name="payment_type" id="payment_type" required>
-        <option value="CASH" {{ old('payment_type') == 'CASH' ? 'selected' : '' }}>
-            Cash
-        </option>
-        <option value="INSTALLMENT" {{ old('payment_type') == 'INSTALLMENT' ? 'selected' : '' }}>
-            Installment
-        </option>
-    </select>
-    <br><br>
-
-    <label>Installment Months</label><br>
-    <input
-        type="number"
-        name="installment_months"
-        min="1"
-        value="{{ old('installment_months') }}"
-    >
-    <br><br>
-
-    {{-- Discount --}}
-    <fieldset>
-        <legend>Discount (optional)</legend>
-
-        <label>Type</label><br>
-        <select name="discount_type">
-            <option value="">-- none --</option>
-            <option value="FIXED" {{ old('discount_type') == 'FIXED' ? 'selected' : '' }}>
-                Fixed
-            </option>
-            <option value="PERCENT" {{ old('discount_type') == 'PERCENT' ? 'selected' : '' }}>
-                Percent (%)
-            </option>
-        </select>
-        <br><br>
-
-        <label>Value</label><br>
-        <input
-            type="number"
-            step="0.01"
-            name="discount_value"
-            value="{{ old('discount_value') }}"
-        >
-        <br><br>
-
-        <label>Promotion Code</label><br>
-        <input
-            type="text"
-            name="promotion_code"
-            value="{{ old('promotion_code') }}"
-        >
-    </fieldset>
-
-    <br>
-
-    <div>
-    Customer:
-    <select name="customer_id" id="customer_select">
-    <option value="">Walk-in</option>
-
-    @foreach($customers as $customer)
-        <option
-            value="{{ $customer->id }}"
-            data-name="{{ $customer->name }}"
-        >
-            {{ $customer->name }} ({{ $customer->phone }})
-        </option>
-    @endforeach
-    </select>
     </div>
 
-    <button type="submit">Confirm Sale</button>
-</form>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;">
 
-<script>
-    const select = document.getElementById('customer_select');
-    const nameInput = document.querySelector('[name="customer_name"]');
+        {{-- ===== TOP PRODUCTS ===== --}}
+        <div style="background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden;">
+            <div style="padding: 15px; background: #333; color: white; font-weight: bold;">🔥 Top 5 Best Sellers</div>
+            <table style="width: 100%; border-collapse: collapse;">
+                @foreach($topProducts as $item)
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px 15px;">{{ $item->product->name ?? '-' }}</td>
+                    <td style="padding: 12px 15px; text-align: right; font-weight: bold; color: #C8A951;">{{ $item->total }} <small>ชิ้น</small></td>
+                </tr>
+                @endforeach
+            </table>
+        </div>
 
-    select.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
+        <div style="background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden;">
+            <div style="padding: 15px; background: #C8A951; color: white; font-weight: bold;">💎 Top 5 Profit Makers</div>
+            <table style="width: 100%; border-collapse: collapse;">
+                @foreach($topProfitProducts as $item)
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px 15px;">{{ $item['product']->name ?? '-' }}</td>
+                    <td style="padding: 12px 15px; text-align: right; font-weight: bold; color: #28a745;">{{ number_format($item['profit'], 0) }}</td>
+                </tr>
+                @endforeach
+            </table>
+        </div>
 
-    if (this.value === "") {
-        nameInput.value = "";
-    } else {
-        nameInput.value = selectedOption.dataset.name;
-    }
-});
-</script>
+    </div>
 
+    {{-- ===== MONTHLY PERFORMANCE ===== --}}
+    <div style="background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px; overflow: hidden;">
+        <div style="padding: 15px 20px; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between;">
+            <span>📈 Monthly Performance ({{ now()->year }})</span>
+            <span style="color: #C8A951;">Total Profit: {{ number_format($totalProfit, 2) }}</span>
+        </div>
+        <div style="padding: 0 20px 20px 20px; overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="color: #999; font-size: 12px;">
+                        <th style="padding: 15px 10px;">เดือน</th>
+                        <th style="padding: 15px 10px; text-align: right;">Sales</th>
+                        <th style="padding: 15px 10px; text-align: right;">Profit</th>
+                        <th style="padding: 15px 10px; text-align: center;">Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(range(1,12) as $month)
+                    @if($monthlySales[$month] > 0)
+                    <tr style="border-bottom: 1px solid #f9f9f9;">
+                        <td style="padding: 10px; font-weight: bold; color: #555;">{{ date("F", mktime(0, 0, 0, $month, 1)) }}</td>
+                        <td style="padding: 10px; text-align: right;">{{ number_format($monthlySales[$month], 0) }}</td>
+                        <td style="padding: 10px; text-align: right; color: #28a745; font-weight: bold;">{{ number_format($monthlyProfit[$month], 0) }}</td>
+                        <td style="padding: 10px; text-align: center;"><span style="color: #C8A951;">●</span></td>
+                    </tr>
+                    @endif
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
 
+    {{-- ===== LATEST INVOICES ===== --}}
+    <h3 style="margin-bottom: 15px;">🆕 Latest Invoices (รายการล่าสุด)</h3>
+    <div style="background: white; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #fafafa; font-size: 13px;">
+                <tr>
+                    <th style="padding: 15px; text-align: left;">Invoice</th>
+                    <th style="padding: 15px; text-align: left;">Customer</th>
+                    <th style="padding: 15px; text-align: right;">Total</th>
+                    <th style="padding: 15px; text-align: center;">Payment</th>
+                    <th style="padding: 15px; text-align: center;">Status</th>
+                    <th style="padding: 15px; text-align: center;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($latestInvoices as $invoice)
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 15px;"><strong>#{{ $invoice->id }}</strong></td>
+                    <td style="padding: 15px;">{{ $invoice->customer_name ?? '-' }}</td>
+                    <td style="padding: 15px; text-align: right; font-weight: bold;">{{ number_format($invoice->total_amount, 2) }}</td>
+                    <td style="padding: 15px; text-align: center;">
+                        <small style="background: #eee; padding: 2px 8px; border-radius: 4px;">{{ $invoice->payment_type }}</small>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <span style="font-size: 11px; font-weight: bold; color: {{ $invoice->status == 'PAID' ? '#28a745' : '#856404' }};">
+                            {{ $invoice->status }}
+                        </span>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <a href="{{ route('admin.invoices.show', $invoice) }}" style="text-decoration: none; color: #C8A951; font-weight: bold;">View</a>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endsection
+</file>
+
+<file path="resources/views/admin/invoices/show.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    {{-- Header Section --}}
+    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 25px;">
+        <div>
+            <h1 style="margin: 0; color: #333;">Invoice #{{ $invoice->id }}</h1>
+            <p style="color: gray; margin-top: 5px;">ออกเมื่อ: {{ $invoice->created_at->format('d/m/Y H:i') }}</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ route('admin.invoices.print', $invoice) }}" target="_blank"
+               style="display: inline-block; padding: 10px 20px; background: #333; color: #fff; text-decoration: none; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                🧾 พิมพ์ใบเสร็จ (Print)
+            </a>
+            <a href="{{ route('admin.invoices.index') }}" style="display: inline-block; padding: 10px 20px; background: #eee; color: #333; text-decoration: none; border-radius: 6px;">
+                กลับหน้ารวม
+            </a>
+        </div>
+    </div>
+
+    {{-- Info Cards --}}
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px;">
+        {{-- Customer & Summary --}}
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #C8A951;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div>
+                    <small style="color: gray; display: block; margin-bottom: 5px;">ลูกค้า</small>
+                    <strong style="font-size: 20px; color: #C8A951;">{{ $invoice->customer_name }}</strong>
+                </div>
+                <div>
+                    <small style="color: gray; display: block; margin-bottom: 5px;">ประเภทการชำระ</small>
+                    <strong style="font-size: 16px;">{{ $invoice->payment_type }}</strong>
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Amount Highlight --}}
+        <div style="background: #333; color: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <small style="opacity: 0.8; display: block; margin-bottom: 5px;">ยอดเงินสุทธิ</small>
+            <strong style="font-size: 28px;">{{ number_format($invoice->total_amount, 2) }}</strong>
+            <small style="display: block; margin-top: 5px;">บาท</small>
+        </div>
+    </div>
+
+    {{-- Installment Section --}}
+    @if($invoice->payment_type === 'INSTALLMENT' && $invoice->installmentPlan)
+        <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            📅 ตารางผ่อนชำระ (Installment Schedule)
+        </h3>
+
+        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background-color: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                        <th style="padding: 15px;">งวดที่</th>
+                        <th style="padding: 15px;">กำหนดชำระ</th>
+                        <th style="padding: 15px; text-align: right;">จำนวนเงิน</th>
+                        <th style="padding: 15px; text-align: center;">สถานะ</th>
+                        <th style="padding: 15px; text-align: center;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($invoice->installmentPlan->schedules as $schedule)
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 15px; font-weight: bold;">{{ $schedule->month_no }}</td>
+                        <td style="padding: 15px; color: {{ \Carbon\Carbon::parse($schedule->due_date)->isPast() && $schedule->status !== 'PAID' ? '#dc3545' : '#333' }}">
+                            {{ \Carbon\Carbon::parse($schedule->due_date)->format('d/m/Y') }}
+                        </td>
+                        <td style="padding: 15px; text-align: right; font-weight: bold;">
+                            {{ number_format($schedule->amount, 2) }}
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            @if($schedule->status === 'PAID')
+                                <span style="background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                    ชำระแล้ว
+                                </span>
+                            @else
+                                <span style="background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                                    รอชำระ
+                                </span>
+                            @endif
+                        </td>
+                        <td style="padding: 15px; text-align: center;">
+                            @if($schedule->status === 'UNPAID')
+                                <a href="{{ route('admin.installments.receive', $schedule) }}"
+                                   style="background: #28a745; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold;">
+                                    💰 รับเงินงวด
+                                </a>
+                            @else
+                                <span style="color: #28a745; font-size: 14px;">✅ เรียบร้อย</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div style="padding: 30px; background: #f9f9f9; border-radius: 12px; border: 1px dashed #ccc; text-align: center; color: #999;">
+            ℹ️ บิลนี้เป็นการชำระเต็มจำนวน (ไม่มีรายการผ่อนชำระ)
+        </div>
+    @endif
+</div>
 @endsection
 </file>
 
@@ -22133,95 +22243,88 @@ class InstallmentTest extends TestCase
 }
 </file>
 
-<file path="app/Models/Invoice.php">
+<file path="app/Http/Controllers/Admin/InvoiceController.php">
 <?php
 
-namespace App\Models;
+namespace App\Http\Controllers\Admin;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Http\Controllers\Controller;
+use App\Models\Invoice;
+use Mpdf\Mpdf;
 
-class Invoice extends Model
+class InvoiceController extends Controller
 {
-    use HasFactory;
-
-    public const PAYMENT_CASH = 'CASH';
-    public const PAYMENT_INSTALLMENT = 'INSTALLMENT';
-
-    public const STATUS_ACTIVE = 'ACTIVE';
-    public const STATUS_PAID = 'PAID';
-
-    public const DISCOUNT_FIXED = 'FIXED';
-    public const DISCOUNT_PERCENT = 'PERCENT';
-
-    protected $fillable = [
-        'customer_id',
-        'customer_name',
-        'total_amount',
-        'payment_type',
-        'status',
-        'discount_type',
-        'discount_amount',
-        'promotion_code',
-    ];
-
-    protected $appends = [
-        'paid_total',
-        'outstanding_balance',
-    ];
-
-    /* ===============================
-     * Relations
-     * =============================== */
-
-    public function customer()
+    public function index()
     {
-        return $this->belongsTo(Customer::class);
+    $invoices = \App\Models\Invoice::latest()->paginate(20);
+
+    return view('admin.invoices.index', compact('invoices'));
     }
 
-    public function items()
+    public function show(Invoice $invoice)
     {
-        return $this->hasMany(InvoiceItem::class);
+    $invoice->load([
+        'customer',
+        'items.stockItem.product',
+        'installmentPlan.schedules',
+    ]);
+
+    return view('admin.invoices.show', compact('invoice'));
     }
 
-    public function installmentPlan()
+    public function printPdf(Invoice $invoice)
     {
-        return $this->hasOne(InstallmentPlan::class);
-    }
+    $invoice->load([
+        'customer',
+        'items.stockItem.product',
+        'installmentPlan.schedules',
+        'payments'
+    ]);
 
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
+    $html = view('admin.invoices.receipt', compact('invoice'))->render();
 
-    /* ===============================
-     * Accessors
-     * =============================== */
+    $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+    $fontDirs = $defaultConfig['fontDir'];
 
-    public function getPaidTotalAttribute(): float
-    {
-        return (float) $this->payments()->sum('amount');
-    }
+    $defaultFontConfig = (new \Mpdf\Config\FontVariables())->getDefaults();
+    $fontData = $defaultFontConfig['fontdata'];
 
-    public function getOutstandingBalanceAttribute(): float
-    {
-        return max(
-            (float) $this->total_amount - $this->paid_total,
-            0
-        );
-    }
+    $mpdf = new Mpdf([
+        'mode' => 'utf-8',
+        'format' => 'A4',
+        'tempDir' => storage_path('app/mpdf'),
 
-    /* ===============================
-     * Business Logic
-     * =============================== */
+        'fontDir' => array_merge($fontDirs, [
+            public_path('fonts'),
+        ]),
 
-    public function refreshPaymentStatus(): void
-    {
-        if ($this->outstanding_balance <= 0) {
-            $this->update([
-                'status' => self::STATUS_PAID,
-            ]);
-        }
+        'fontdata' => $fontData + [
+            'thsarabun' => [
+                'R' => 'THSarabunNew.ttf',
+            ],
+        ],
+
+        'default_font' => 'thsarabun'
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | ✅ เพิ่มส่วนนี้
+    |--------------------------------------------------------------------------
+    */
+
+    $mpdf->SetWatermarkImage(public_path('images/logo.png'), 0.08);
+    $mpdf->showWatermarkImage = true;
+
+    /*
+    |--------------------------------------------------------------------------
+    */
+
+    $mpdf->WriteHTML($html);
+
+    return response(
+        $mpdf->Output("invoice-{$invoice->id}.pdf", 'I')
+    )->header('Content-Type', 'application/pdf');
     }
 }
 </file>
@@ -22289,133 +22392,6 @@ class StockItem extends Model
             ->value('price_per_gram') ?? 0;
 
         return ($this->gold_weight_actual * $goldPrice);
-    }
-}
-</file>
-
-<file path="app/Services/InstallmentService.php">
-<?php
-
-namespace App\Services;
-
-use App\Models\Invoice;
-use App\Models\InstallmentPlan;
-use App\Models\InstallmentSchedule;
-use App\Models\Payment;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use App\Exceptions\Installment\{
-    InvoiceNotInstallmentException,
-    InstallmentAlreadyExistsException,
-    InvalidInstallmentMonthsException,
-    ScheduleAlreadyPaidException
-};
-
-class InstallmentService
-{
-    /**
-     * สร้างแผนผ่อนจาก Invoice
-     */
-    public function createPlanFromInvoice(
-        Invoice $invoice,
-        int $months
-    ): InstallmentPlan {
-
-        if ($invoice->payment_type !== Invoice::PAYMENT_INSTALLMENT) {
-            throw new InvoiceNotInstallmentException(
-                'Invoice นี้ไม่ได้เลือกการชำระแบบผ่อน'
-            );
-        }
-
-        if ($invoice->installmentPlan) {
-            throw new InstallmentAlreadyExistsException(
-                'Invoice นี้มีแผนผ่อนอยู่แล้ว'
-            );
-        }
-
-        if ($months <= 0) {
-            throw new InvalidInstallmentMonthsException(
-                'จำนวนเดือนต้องมากกว่า 0'
-            );
-        }
-
-        return DB::transaction(function () use ($invoice, $months) {
-
-            $plan = InstallmentPlan::create([
-                'invoice_id'   => $invoice->id,
-                'total_amount' => $invoice->total_amount,
-                'months'       => $months,
-                'status'       => InstallmentPlan::STATUS_ACTIVE,
-            ]);
-
-            $monthlyAmount = round(
-                $invoice->total_amount / $months,
-                2
-            );
-
-            for ($month = 1; $month <= $months; $month++) {
-
-                InstallmentSchedule::create([
-                    'installment_plan_id' => $plan->id,
-                    'month_no'            => $month,
-                    'due_date'            => Carbon::now()->addMonths($month),
-                    'amount'              => $monthlyAmount,
-                    'status'              => InstallmentSchedule::STATUS_UNPAID,
-                ]);
-            }
-
-            return $plan;
-        });
-    }
-
-    /**
-     * ชำระงวด
-     */
-    public function markScheduleAsPaid(
-        InstallmentSchedule $schedule
-    ): void {
-
-        if ($schedule->status === InstallmentSchedule::STATUS_PAID) {
-            throw new ScheduleAlreadyPaidException(
-                'งวดนี้ถูกชำระแล้ว'
-            );
-        }
-
-        DB::transaction(function () use ($schedule) {
-
-            // 1️⃣ สร้าง payment
-            Payment::create([
-                'invoice_id'     => $schedule->plan->invoice->id,
-                'amount'         => $schedule->amount,
-                'payment_method' => null,
-                'note'           => null,
-                'paid_at'        => now(),
-            ]);
-
-            // 2️⃣ อัปเดตงวด
-            $schedule->update([
-                'status'  => InstallmentSchedule::STATUS_PAID,
-                'paid_at' => now(),
-            ]);
-
-            $plan = $schedule->plan;
-
-            // 3️⃣ ถ้าไม่มีงวดค้าง → ปิด plan + invoice
-            $hasUnpaid = $plan->schedules()
-                ->where('status', InstallmentSchedule::STATUS_UNPAID)
-                ->exists();
-
-            if (! $hasUnpaid) {
-
-                $plan->update([
-                    'status' => InstallmentPlan::STATUS_COMPLETED,
-                ]);
-
-                $plan->invoice->update([
-                    'status' => Invoice::STATUS_PAID,
-                ]);
-            }
-        });
     }
 }
 </file>
@@ -22664,6 +22640,216 @@ return [
 }
 </file>
 
+<file path="resources/views/admin/layout.blade.php">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f4f4f4; }
+        a { margin-right: 8px; }
+    </style>
+</head>
+<body>
+<div style="display:flex">
+
+<aside style="min-width: fit-content; white-space: nowrap; padding: 20px; background: #f5f5f5; border-right: 1px solid #ddd; height: 100vh;">
+
+    <h3>Hayati Admin</h3>
+    <p style="font-size: 14px; color: gray; margin-bottom: 20px;">
+        👤 {{ auth()->user()->name }}
+    </p>
+    <br>
+    <ul style="list-style: none; padding: 0;">
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.dashboard') }}" style="text-decoration: none; color: #333;">📊 Dashboard</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.gold-price.create') }}" style="text-decoration: none; color: #333;">🪙 Update Gold Price(18K)</a></li>
+    <br>
+        <h4 style="margin-top: 20px; color: #C8A951;">Sales</h4>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.sales.create') }}" style="text-decoration: none; color: #333;">➕ New Sale</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.payments.index') }}" style="text-decoration: none; color: #333;">💰 Payments</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.invoices.index') }}" style="text-decoration: none; color: #333;">📄 Invoices</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.installments.index') }}" style="text-decoration: none; color: #333;">📑 Installments</a></li>
+    <br>
+        <h4 style="margin-top: 20px; color: #C8A951;">Inventory</h4>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.products.index') }}" style="text-decoration: none; color: #333;">📦 Products</a></li>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.stock-items.index') }}" style="text-decoration: none; color: #333;">🏷 Stock</a></li>
+    <br>
+        <h4 style="margin-top: 20px; color: #C8A951;">CRM</h4>
+        <li style="margin-bottom: 8px;"><a href="{{ route('admin.customers.index') }}" style="text-decoration: none; color: #333;">👤 Customers</a></li>
+    </ul>
+    <br>
+
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" style="width: 100%; padding: 8px; cursor: pointer; background: #eee; border: 1px solid #ccc; border-radius: 4px;">
+            🚪 Logout
+        </button>
+    </form>
+</aside>
+
+    <main style="padding:20px; flex:1">
+        @yield('content')
+    </main>
+
+</div>
+</body>
+
+</html>
+</file>
+
+<file path="resources/views/admin/sales/create.blade.php">
+@extends('admin.layout')
+
+@section('content')
+<div style="padding: 20px;">
+    <h2 style="margin-bottom: 20px;">🛒 New Sale (เปิดบิลขายใหม่)</h2>
+
+    @if ($errors->any())
+        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            ⚠️ {{ $errors->first() }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('admin.sales.store') }}">
+        @csrf
+
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 25px; align-items: start;">
+
+            {{-- ฝั่งซ้าย: รายการ Stock สินค้า --}}
+            <div style="background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+                <div style="padding: 15px; background: #f8f4e8; border-bottom: 2px solid #C8A951;">
+                    <strong style="color: #333;">📦 เลือกสินค้าจากคลัง</strong>
+                </div>
+                <div style="max-height: 600px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: #fafafa; font-size: 13px; color: #666;">
+                                <th style="padding: 12px; text-align: center;">เลือก</th>
+                                <th style="padding: 12px;">สินค้า</th>
+                                <th style="padding: 12px; text-align: right;">ต้นทุน (Cost)</th>
+                                <th style="padding: 12px; text-align: right;">ราคากลาง</th>
+                                <th style="padding: 12px; text-align: right; width: 150px;">ราคาขายจริง</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($stockItems as $item)
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 12px; text-align: center;">
+                                    <input type="checkbox" name="stock_item_ids[]" value="{{ $item->id }}" style="transform: scale(1.2); accent-color: #C8A951;">
+                                </td>
+                                <td style="padding: 12px;">
+                                    <strong style="display: block;">{{ $item->product->name }}</strong>
+                                    <small style="color: #888;">#{{ $item->id }}</small>
+                                </td>
+                                <td style="padding: 12px; text-align: right; color: #999;">{{ number_format($item->total_cost, 0) }}</td>
+                                <td style="padding: 12px; text-align: right; font-weight: bold; color: #C8A951;">{{ number_format($item->market_reference, 0) }}</td>
+                                <td style="padding: 12px; text-align: right;">
+                                    <input type="number" step="0.01" name="sale_prices[{{ $item->id }}]"
+                                           placeholder="ใส่ราคาขาย"
+                                           style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: right;">
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- ฝั่งขวา: รายละเอียดลูกค้าและการชำระเงิน --}}
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+
+                {{-- Customer Box --}}
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #333;">👤 ข้อมูลลูกค้า</h3>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 13px; margin-bottom: 5px;">เลือกลูกค้าที่มีอยู่</label>
+                        <select name="customer_id" id="customer_select" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+                            <option value="">-- Walk-in (ลูกค้าทั่วไป) --</option>
+                            @foreach($customers as $customer)
+                                <option value="{{ $customer->id }}" data-name="{{ $customer->name }}">
+                                    {{ $customer->name }} ({{ $customer->phone }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="display: block; font-size: 13px; margin-bottom: 5px;">ชื่อลูกค้าที่แสดงในบิล</label>
+                        <input type="text" name="customer_name" value="{{ old('customer_name') }}"
+                               style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; background: #f9f9f9;">
+                    </div>
+                </div>
+
+                {{-- Payment Box --}}
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 15px 0; font-size: 16px; color: #333;">💰 การชำระเงิน</h3>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-size: 13px; margin-bottom: 5px;">ประเภทการชำระ *</label>
+                        <select name="payment_type" id="payment_type" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ddd; font-weight: bold; color: #28a745;">
+                            <option value="CASH" {{ old('payment_type') == 'CASH' ? 'selected' : '' }}>เงินสด (Cash)</option>
+                            <option value="INSTALLMENT" {{ old('payment_type') == 'INSTALLMENT' ? 'selected' : '' }}>ผ่อนชำระ (Installment)</option>
+                        </select>
+                    </div>
+
+                    <div id="installment_section" style="margin-bottom: 15px; display: none; padding: 10px; background: #fff9e6; border-radius: 8px;">
+                        <label style="display: block; font-size: 13px; margin-bottom: 5px;">จำนวนงวด (เดือน)</label>
+                        <input type="number" name="installment_months" min="1" value="{{ old('installment_months', 6) }}"
+                               style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #f0ad4e;">
+                    </div>
+
+                    <div style="padding-top: 10px; border-top: 1px solid #eee;">
+                        <label style="display: block; font-size: 13px; margin-bottom: 5px;">ส่วนลด (Discount)</label>
+                        <div style="display: flex; gap: 5px;">
+                            <select name="discount_type" style="padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+                                <option value="">ไม่มี</option>
+                                <option value="FIXED" {{ old('discount_type') == 'FIXED' ? 'selected' : '' }}>฿</option>
+                                <option value="PERCENT" {{ old('discount_type') == 'PERCENT' ? 'selected' : '' }}>%</option>
+                            </select>
+                            <input type="number" step="0.01" name="discount_value" value="{{ old('discount_value') }}" placeholder="0.00"
+                                   style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 18px; background: #333; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    Confirm & Open Bill
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // จัดการเลือกลูกค้า
+    const select = document.getElementById('customer_select');
+    const nameInput = document.querySelector('[name="customer_name"]');
+    select.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        nameInput.value = (this.value === "") ? "" : selectedOption.dataset.name;
+    });
+
+    // จัดการแสดงผลส่วนของการผ่อน
+    const paymentType = document.getElementById('payment_type');
+    const installmentSection = document.getElementById('installment_section');
+
+    function toggleInstallment() {
+        installmentSection.style.display = (paymentType.value === 'INSTALLMENT') ? 'block' : 'none';
+    }
+
+    paymentType.addEventListener('change', toggleInstallment);
+    window.onload = toggleInstallment; // ตรวจสอบสถานะตอนโหลดหน้าใหม่ (เผื่อ Validation error)
+</script>
+@endsection
+</file>
+
 <file path="tests/Feature/SaleServiceTest.php">
 <?php
 
@@ -22867,6 +23053,226 @@ class InstallmentController extends Controller
 }
 </file>
 
+<file path="app/Models/Invoice.php">
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Invoice extends Model
+{
+    use HasFactory;
+
+    public const PAYMENT_CASH = 'CASH';
+    public const PAYMENT_INSTALLMENT = 'INSTALLMENT';
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_PAID = 'PAID';
+
+    public const DISCOUNT_FIXED = 'FIXED';
+    public const DISCOUNT_PERCENT = 'PERCENT';
+
+    protected $fillable = [
+        'customer_id',
+        'customer_name',
+        'total_amount',
+        'payment_type',
+        'status',
+        'discount_type',
+        'discount_amount',
+        'promotion_code',
+    ];
+
+    protected $appends = [
+        'paid_total',
+        'outstanding_balance',
+    ];
+
+    /* ===============================
+     * Relations
+     * =============================== */
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function installmentPlan()
+    {
+        return $this->hasOne(InstallmentPlan::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /* ===============================
+     * Accessors
+     * =============================== */
+
+    public function getPaidTotalAttribute(): float
+    {
+        return (float) $this->payments()->sum('amount');
+    }
+
+    public function getOutstandingBalanceAttribute(): float
+    {
+        return max(
+            (float) $this->total_amount - $this->paid_total,
+            0
+        );
+    }
+
+    /* ===============================
+     * Business Logic
+     * =============================== */
+
+    public function refreshPaymentStatus(): void
+    {
+        if ($this->outstanding_balance <= 0) {
+            $this->update([
+                'status' => self::STATUS_PAID,
+            ]);
+        }
+    }
+}
+</file>
+
+<file path="app/Services/InstallmentService.php">
+<?php
+
+namespace App\Services;
+
+use App\Models\Invoice;
+use App\Models\InstallmentPlan;
+use App\Models\InstallmentSchedule;
+use App\Models\Payment;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Exceptions\Installment\{
+    InvoiceNotInstallmentException,
+    InstallmentAlreadyExistsException,
+    InvalidInstallmentMonthsException,
+    ScheduleAlreadyPaidException
+};
+
+class InstallmentService
+{
+    /**
+     * สร้างแผนผ่อนจาก Invoice
+     */
+    public function createPlanFromInvoice(
+        Invoice $invoice,
+        int $months
+    ): InstallmentPlan {
+
+        if ($invoice->payment_type !== Invoice::PAYMENT_INSTALLMENT) {
+            throw new InvoiceNotInstallmentException(
+                'Invoice นี้ไม่ได้เลือกการชำระแบบผ่อน'
+            );
+        }
+
+        if ($invoice->installmentPlan) {
+            throw new InstallmentAlreadyExistsException(
+                'Invoice นี้มีแผนผ่อนอยู่แล้ว'
+            );
+        }
+
+        if ($months <= 0) {
+            throw new InvalidInstallmentMonthsException(
+                'จำนวนเดือนต้องมากกว่า 0'
+            );
+        }
+
+        return DB::transaction(function () use ($invoice, $months) {
+
+            $plan = InstallmentPlan::create([
+                'invoice_id'   => $invoice->id,
+                'total_amount' => $invoice->total_amount,
+                'months'       => $months,
+                'status'       => InstallmentPlan::STATUS_ACTIVE,
+            ]);
+
+            $monthlyAmount = round(
+                $invoice->total_amount / $months,
+                2
+            );
+
+            for ($month = 1; $month <= $months; $month++) {
+
+                InstallmentSchedule::create([
+                    'installment_plan_id' => $plan->id,
+                    'month_no'            => $month,
+                    'due_date'            => Carbon::now()->addMonths($month),
+                    'amount'              => $monthlyAmount,
+                    'status'              => InstallmentSchedule::STATUS_UNPAID,
+                ]);
+            }
+
+            return $plan;
+        });
+    }
+
+    /**
+     * ชำระงวด
+     */
+    public function markScheduleAsPaid(
+        InstallmentSchedule $schedule
+    ): void {
+
+        if ($schedule->status === InstallmentSchedule::STATUS_PAID) {
+            throw new ScheduleAlreadyPaidException(
+                'งวดนี้ถูกชำระแล้ว'
+            );
+        }
+
+        DB::transaction(function () use ($schedule) {
+
+            // 1️⃣ สร้าง payment
+            \App\Models\Payment::create([
+                'invoice_id'     => $schedule->plan->invoice->id,
+                'amount'         => $schedule->amount,
+                'payment_method' => null,
+                'note'           => null,
+                'paid_at'        => now(),
+            ]);
+
+            // 2️⃣ อัปเดตงวด
+            $schedule->update([
+                'status'  => InstallmentSchedule::STATUS_PAID,
+                'paid_at' => now(),
+            ]);
+
+            $plan = $schedule->plan;
+
+            // 3️⃣ ถ้าไม่มีงวดค้าง → ปิด plan + invoice
+            $hasUnpaid = $plan->schedules()
+                ->where('status', InstallmentSchedule::STATUS_UNPAID)
+                ->exists();
+
+            if (! $hasUnpaid) {
+
+                $plan->update([
+                    'status' => InstallmentPlan::STATUS_COMPLETED,
+                ]);
+
+                $plan->invoice->update([
+                    'status' => Invoice::STATUS_PAID,
+                ]);
+            }
+        });
+    }
+}
+</file>
+
 <file path="config/queue.php">
 <?php
 
@@ -23046,8 +23452,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('gold-price', [GoldPriceController::class, 'store'])->name('gold-price.store');
 
     // Stock Items
-    Route::resource('stock-items', StockItemController::class)
-        ->only(['index', 'create', 'store']);
+    Route::resource('stock-items', StockItemController::class);
+    Route::get('stock-items/{stockItem}/edit', [StockItemController::class, 'edit'])->name('admin.stock-items.edit');
+    Route::put('stock-items/{stockItem}', [StockItemController::class, 'update'])->name('admin.stock-items.update');
+    Route::delete('stock-items/{stockItem}', [StockItemController::class, 'destroy'])->name('admin.stock-items.destroy');
 
     // Sales
     Route::get('sales/create', [SaleController::class, 'create'])
@@ -23244,28 +23652,37 @@ class SaleService
         return [$final, $discountAmount];
     }
 
-    protected function createInvoice(
-        array $data,
-        float $finalTotal,
-        float $discountAmount
-    ): Invoice {
+    protected function createInvoice(array $data, float $finalTotal, float $discountAmount): Invoice
+    {
+    // 1. ดึง ID ลูกค้ามาตั้งต้น
+    $customerId = $data['customer_id'] ?? null;
+    $customerName = $data['customer_name'] ?? null;
 
-        $paymentType = $data['payment_type'] ?? Invoice::PAYMENT_CASH;
-
-        return Invoice::create([
-            'customer_id'     => $data['customer_id']   ?? null,
-            'customer_name'   => $data['customer_name'] ?? null,
-            'total_amount'    => $finalTotal,
-            'discount_amount' => $discountAmount,
-            'discount_type'   => $data['discount_type'] ?? null,
-            'promotion_code'  => $data['promotion_code'] ?? null,
-            'payment_type'    => $paymentType,
-            'status'          => $paymentType === Invoice::PAYMENT_INSTALLMENT
-                ? Invoice::STATUS_ACTIVE
-                : Invoice::STATUS_PAID,
-        ]);
+    // 2. ถ้าไม่มี ID แต่มีชื่อ ลองค้นหาในระบบ (ดักเผื่อหน้าบ้านส่งมาแต่ชื่อ)
+    if (!$customerId && !empty($customerName)) {
+        $foundCustomer = \App\Models\Customer::where('name', $customerName)->first();
+        if ($foundCustomer) {
+            $customerId = $foundCustomer->id;
+        }
     }
 
+    // 3. กำหนดประเภทการชำระ (สำคัญ! ของเดิมขาดบรรทัดนี้ในฟังก์ชัน)
+    $paymentType = $data['payment_type'] ?? Invoice::PAYMENT_CASH;
+
+    // 4. บันทึกลงฐานข้อมูล
+    return Invoice::create([
+        'customer_id'     => $customerId,
+        'customer_name'   => $customerName,
+        'total_amount'    => $finalTotal,
+        'discount_amount' => $discountAmount,
+        'discount_type'   => $data['discount_type'] ?? null,
+        'promotion_code'  => $data['promotion_code'] ?? null,
+        'payment_type'    => $paymentType,
+        'status'          => ($paymentType === Invoice::PAYMENT_INSTALLMENT)
+            ? Invoice::STATUS_ACTIVE
+            : Invoice::STATUS_PAID,
+    ]);
+    }
     protected function markStockItemAsSold(StockItem $stockItem): void
     {
         $stockItem->update([
@@ -23335,10 +23752,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
-            'engine' => null,
-            'options' => extension_loaded('pdo_mysql') ? array_filter([
-                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
-            ]) : [],
+            'engine' => null
         ],
 
         'mariadb' => [
@@ -23362,19 +23776,18 @@ return [
         ],
 
         'pgsql' => [
-            'driver' => 'pgsql',
-            'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => env('DB_CHARSET', 'utf8'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
-        ],
+    'driver' => 'pgsql',
+    'host' => env('DB_HOST'),
+    'port' => env('DB_PORT', '5432'),
+    'database' => env('DB_DATABASE'),
+    'username' => env('DB_USERNAME'),
+    'password' => env('DB_PASSWORD'),
+    'charset' => 'utf8',
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'search_path' => 'public',
+    'sslmode' => 'require',
+],
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
