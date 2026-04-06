@@ -23,10 +23,28 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-
 Route::get('/run-migrate-force', function () {
-    $exitCode = Artisan::call('migrate', ['--force' => true]);
-    return "Migration finished with exit code: " . $exitCode;
+    // 1. บังคับล้างแคชทุกอย่างก่อน เพื่อให้ Laravel เลิกจำค่า 'forge' หรือค่า IPv6 เก่า
+    Artisan::call('config:clear');
+    Artisan::call('cache:clear');
+    Artisan::call('view:clear');
+    Artisan::call('route:clear');
+
+    // 2. รัน Migration
+    try {
+        $exitCode = Artisan::call('migrate', ['--force' => true]);
+
+        // แถม: เช็กค่าปัจจุบันที่ Laravel อ่านได้ (เพื่อความชัวร์)
+        $currentHost = config('database.connections.pgsql.host');
+        $currentDB = config('database.connections.pgsql.database');
+
+        return "Cache Cleared! <br> Migration finished with exit code: " . $exitCode .
+               "<br> Current Host: " . $currentHost .
+               "<br> Current DB: " . $currentDB;
+
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
 });
 
 
@@ -41,7 +59,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     ->name('dashboard');
 
     // Products
-    Route::resource('products', ProductController::class);
+    Route::resource('products', Producontroller::class);
 
     // Customers
     Route::resource('customers', CustomerController::class);
