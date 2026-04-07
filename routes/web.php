@@ -23,19 +23,15 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// ✅ ใช้ตัวนี้ตัวเดียวพอครับ ตัด Middleware ออกให้หมดเพื่อรัน Migrate โดยเฉพาะ
+// เปลี่ยนจาก Route เดิม เป็นแบบนี้ครับ
 Route::get('/run-migrate-force', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('migrate:force');
-        return "✅ Migration finished successfully!<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+        Artisan::call('migrate:force');
+        return "Migration finished successfully!<br><pre>" . Artisan::output() . "</pre>";
     } catch (\Exception $e) {
-        return "❌ Error: " . $e->getMessage();
+        return "Error: " . $e->getMessage();
     }
-})->withoutMiddleware([
-    \App\Http\Middleware\VerifyCsrfToken::class,
-    \Illuminate\Session\Middleware\StartSession::class,
-    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-]);
+})->middleware('api');
 
 /*
 |--------------------------------------------------------------------------
