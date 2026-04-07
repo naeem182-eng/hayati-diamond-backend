@@ -23,22 +23,18 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// จากเดิมที่อาจจะอยู่ในกลุ่ม web หรือไม่ได้ระบุกลุ่ม
 Route::get('/run-migrate-force', function () {
-    try {
-        // บังคับเปลี่ยน Config ใน Runtime เลย (ชัวร์ที่สุด)
-        Config::set('database.connections.pgsql.host', '52.74.252.201');
-        Config::set('database.connections.pgsql.username', 'postgres.wjyvjrkxzpsnnbodmoik');
-        Config::set('database.connections.pgsql.database', 'postgres');
+    Artisan::call('migrate:force');
+    return "Migration finished!";
+});
 
-        Artisan::call('config:clear');
-
-        $exitCode = Artisan::call('migrate', ['--force' => true]);
-        return "Migration finished! Code: " . $exitCode;
-    } catch (\Exception $e) {
-        return "Migration Failed: " . $e->getMessage();
-    }
-})->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Session\Middleware\StartSession::class]);
-
+// ให้เปลี่ยนเป็น (ย้ายไปอยู่นอกกลุ่ม middleware หรือใช้ middleware: [])
+Route::withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class, \Illuminate\View\Middleware\ShareErrorsFromSession::class])
+    ->get('/run-migrate-force', function () {
+        \Illuminate\Support\Facades\Artisan::call('migrate:force');
+        return "Migration finished!";
+});
 
 /*
 |--------------------------------------------------------------------------
