@@ -23,18 +23,19 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// จากเดิมที่อาจจะอยู่ในกลุ่ม web หรือไม่ได้ระบุกลุ่ม
+// ✅ ใช้ตัวนี้ตัวเดียวพอครับ ตัด Middleware ออกให้หมดเพื่อรัน Migrate โดยเฉพาะ
 Route::get('/run-migrate-force', function () {
-    Artisan::call('migrate:force');
-    return "Migration finished!";
-});
-
-// ให้เปลี่ยนเป็น (ย้ายไปอยู่นอกกลุ่ม middleware หรือใช้ middleware: [])
-Route::withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class, \Illuminate\View\Middleware\ShareErrorsFromSession::class])
-    ->get('/run-migrate-force', function () {
+    try {
         \Illuminate\Support\Facades\Artisan::call('migrate:force');
-        return "Migration finished!";
-});
+        return "✅ Migration finished successfully!<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
+    } catch (\Exception $e) {
+        return "❌ Error: " . $e->getMessage();
+    }
+})->withoutMiddleware([
+    \App\Http\Middleware\VerifyCsrfToken::class,
+    \Illuminate\Session\Middleware\StartSession::class,
+    \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -47,7 +48,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     ->name('dashboard');
 
     // Products
-    Route::resource('products', Producontroller::class);
+    Route::resource('products', Productontroller::class);
 
     // Customers
     Route::resource('customers', CustomerController::class);
