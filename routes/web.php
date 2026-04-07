@@ -44,7 +44,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     ->name('dashboard');
 
     // Products
-    Route::resource('products', Productontroller::class);
+    Route::resource('products', ProductController::class);
 
     // Customers
     Route::resource('customers', CustomerController::class);
