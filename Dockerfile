@@ -59,7 +59,7 @@ EXPOSE 10000
 # ================================
 # 7) Start container (WITH migrate)
 # ================================
-CMD php artisan config:cache && \
+CMD php artisan config:clear && \
     php artisan route:cache && \
     php artisan migrate --force && \
     sed -i "s/80/${PORT}/g" /etc/apache2/ports.conf && \
