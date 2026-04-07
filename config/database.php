@@ -86,8 +86,7 @@ return [
     'port' => env('DB_PORT', '5432'),
     'database' => env('DB_DATABASE', 'postgres'),
     'username' => env('DB_USERNAME', 'postgres.wjyvjrkxzpsnnbodmoik'),
-    'password' => env('DB_PASSWORD'), // รหัสผ่านห้ามใส่ ให้ดึงจาก env เท่านั้น
-    'charset' => 'utf8',
+    'password' => env('DB_PASSWORD'),
     'prefix' => '',
     'prefix_indexes' => true,
     'search_path' => 'public',

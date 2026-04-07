@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\GoldPriceController;
-
+use Illuminate\Support\Facades\Config;
 use App\Http\Controllers\InstallmentController;
 
 // use App\Http\Controllers\InstallmentPaymentController;
@@ -24,28 +24,20 @@ Route::get('/', function () {
 });
 
 Route::get('/run-migrate-force', function () {
-    // 1. บังคับล้างแคชทุกอย่างก่อน เพื่อให้ Laravel เลิกจำค่า 'forge' หรือค่า IPv6 เก่า
-    Artisan::call('config:clear');
-    Artisan::call('cache:clear');
-    Artisan::call('view:clear');
-    Artisan::call('route:clear');
-
-    // 2. รัน Migration
     try {
+        // บังคับเปลี่ยน Config ใน Runtime เลย (ชัวร์ที่สุด)
+        Config::set('database.connections.pgsql.host', '52.74.252.201');
+        Config::set('database.connections.pgsql.username', 'postgres.wjyvjrkxzpsnnbodmoik');
+        Config::set('database.connections.pgsql.database', 'postgres');
+
+        Artisan::call('config:clear');
+
         $exitCode = Artisan::call('migrate', ['--force' => true]);
-
-        // แถม: เช็กค่าปัจจุบันที่ Laravel อ่านได้ (เพื่อความชัวร์)
-        $currentHost = config('database.connections.pgsql.host');
-        $currentDB = config('database.connections.pgsql.database');
-
-        return "Cache Cleared! <br> Migration finished with exit code: " . $exitCode .
-               "<br> Current Host: " . $currentHost .
-               "<br> Current DB: " . $currentDB;
-
+        return "Migration finished! Code: " . $exitCode;
     } catch (\Exception $e) {
-        return "Error: " . $e->getMessage();
+        return "Migration Failed: " . $e->getMessage();
     }
-});
+})->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class, \Illuminate\Session\Middleware\StartSession::class]);
 
 
 /*
