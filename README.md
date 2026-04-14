@@ -1,59 +1,39 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+💎 Hayati Diamond - Business Management System
+A dedicated management platform for mid-sized jewelry businesses, specifically designed to handle gemstone inventory and a structured "Installment-to-Own" (ออมทอง/ออมเพชร) business model.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+✨ Key Features
+🛠 Practical Inventory Management
+Product Categorization: Manage various jewelry items, from affordable pieces (10k+) to premium collections (up to 200k).
 
-## About Laravel
+Gold Price Synchronization: Centralized gold price setting to ensure product valuations reflect current market rates.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Stock Status Control: Professional tracking of item availability, specifically managing reserved vs. available stock.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+💳 Savings & Installment Tracking (ระบบออมสินค้า)
+Interest-Free Installment Logic: Automated calculation of equal monthly payments based on the product’s total value and the chosen duration.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Progressive Payment Monitoring: A rigorous tracking system to monitor every payment made towards a specific item.
 
-## Learning Laravel
+Full-Payment Delivery Lock: Business logic that ensures item delivery status is only cleared once the balance reaches zero.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+📄 Financial Documentation
+Automated Transaction Receipts: Professional PDF generation for every installment payment using mPDF.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Internal Asset Integrity: All document assets (logos/images) are sourced locally to guarantee that historical receipts remain accurate and visually complete, regardless of external network status.
 
-## Laravel Sponsors
+🛠 Tech Stack
+Framework: Laravel 12 (PHP 8.2+)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Database: PostgreSQL (Cloud Managed via Supabase)
 
-### Premium Partners
+Frontend: Blade Templates & Tailwind CSS
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Deployment: Containerized with Docker on Render
 
-## Contributing
+💡 Engineering Highlights
+Reliable Document Generation: By moving from external cloud URLs to local file sourcing for PDFs, the system ensures that transactional records are permanent and immune to external link expirations.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Precise Financial Tracking: Implemented custom logic to handle installment schedules, focusing on tracking accumulated payments until they match the fixed product price—critical for the "delivery upon full payment" model.
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+📝 Project Context
+This system is tailored for mid-range jewelry operations, focusing on providing a secure and organized way for customers to save up for high-value items while allowing business owners to manage inventory with high precision.

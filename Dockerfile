@@ -54,9 +54,6 @@ RUN chown -R www-data:www-data storage bootstrap/cache \
 EXPOSE 10000
 
 # ================================
-# 7) Start container (NO migrate here)
-# ================================
-# ================================
 # 7) Start container (WITH migrate)
 # ================================
 CMD php artisan config:clear && \
